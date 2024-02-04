@@ -5,6 +5,7 @@ date: 2024-01-22
 tags:
 - object oriented design
 - ruby
+- books
 ---
 
 [Practical Object-Oriented Design: An Agile Primer Using Ruby](https://www.poodr.com/) by [Sandi Metz](https://sandimetz.com/) is one of those books that everybody who writes or aspires to write object oriented code should read. Indeed, a read through this book will be of value for seasoned practicioners and inexperienced novices alike. Whether it be to discover new concepts, remember why they are important, or articulate the reasons behind that warm fuzzy feeling you get in your stomach when you read well designed code; POODR can help.
