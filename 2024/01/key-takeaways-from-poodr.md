@@ -11,7 +11,7 @@ tags:
 
 I personally really like this book. In fact, I like to dust it off every now and then to give it a re-read. To help with that, I've come up with a list of key takeaways from the book, with some of my own interpretations sprinkled in. For me, it serves as a sort of summary to help commit the book's contents to memory. I thought I'd share it with you today.
 
-> While this book uses the Ruby language for its examples and discussions, the concepts it describes are equally applicable to any classical object oriented language. Dynamically typed language users do get a little more milleage than users of statically typed ones. But still, something like 90% of the content is relevant to both.
+> While this book uses the Ruby language for its examples and discussions, the concepts it describes are equally applicable to any classical object oriented language. Dynamically typed language users do get a little more milleage than users of statically typed ones. But still, something like 90% of the content is relevant to both. For this summary, I've taken express care not to tie the discussion to Ruby too much and be as language agnostic as possible.
 
 # Chapter 1: Object-Oriented Design
 
@@ -198,10 +198,187 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 # Chapter 5: Reducing Costs with Duck Typing
 
-## asdasdasd
+## About duck types
 
-1. asduahsd
-2. sjkfhsdf
-3. sdfjkhsdfhj
+1. Duck types are public interfaces that manifest themselves across classes. When multiple classes accept the same messages (i.e. define methods with the same signature), they are said to be of the same duck type.
+2. "Duck type" is a dynamic language concept. Static languages offer equivalent features via "[interfaces](https://en.wikipedia.org/wiki/Interface_(object-oriented_programming))".
+3. The difference is that, in statically typed languages, interfaces need to be explicitly defined in code and concrete classes need to explicitly implement them. On the other hand, duck types in dynamically typed languages need only be acknowledged in an asbstract sense. They don't have to be explicitly defined in code.
+4. Duck types and interfaces establish a contract. A set of messages that a given class is expected to be able to receive. A protocol that users of these classes can be confident that they will adhere to.
+5. Just as a class can implement multiple interfaces; an object can be of many duck types. That's because interfaces and duck types materialize depending on the situation in which objects that implement them are used. The same object can be used in different places for different things. Each user will see the object from their own perspective, and each can expect it conform to a different interface. See the [interface segregation principle](https://en.wikipedia.org/wiki/Interface_segregation_principle).
+6. Moreover, code that depends on an interface or duck type is flexible enough to collaborate with any concrete class that implemets that interface or duck type. See the [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle). 
+7. As we've established, it's better to depend on abstractions than to depend on concretions. So, users of an object should not care what its type is, only what it does. Behavior over identity. In other words, they should focus on messages and public interfaces, instead of specific classes. Duck types and interfaces bring to the forefront what an object does and abstracts away what it is.
+8. Applying duck types on a situation makes the code more abstract and less concrete. Concrete code is easier to understand but harder to extend. Abstract code is harder to understand at the beginning but easier to change. In the long run, abstract code tends to reduce maintenance costs.
+9. When an object invokes methods on multiple objects in order to achieve a single purpose, that's a situation where a duck type may be helpful. Think from the perspective of the caller and what it needs to come up with a message that makes sense for it to send its many collaborators. That method should be part of the public interface of each of its collaborators. To the caller's eyes, each of its collaborators belong in the same duck type.
 
-## asdasdad
+## Writing code that leverages duck types
+
+10. Whenever you see conditional logic that sends a different message depending on the concrete class of a given object, that's the code telling you that it needs a duck type or interface.
+11. Come up with a message that makes sense from the perspective of the caller and add it to each of the classes expected by your code in the conditional. These classes now share the same public interface, they are of the same duck type. Then remove the conditional and just call that method. Replace conditional logic with [polymorphism](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)).
+12. In general, try to avoid code that explicitly mentions concrete classes or checks for the existence of particular methods in order to determine further behavior. Instead come up with a shared interface and send those messages to the collaborators regardless of their actual type.
+13. The one exception to this rule is when dealing with exceptionally stable classes. Like those in your language libraries. Where the introduction of duck types would mean modifying core language libraries. Explicit type checks against these classes are usually low cost.
+14. Duck types are abstract and less obvious in the code. That's why they need to be well documented and tested.
+
+# Chapter 6: Acquiring Behavior through Inheritance
+
+## About inheritance
+
+1. Inheritance establishes a relationship between two classes where it is said that a subclass or derived class A "is a" superclass or base class B.
+2. Inheritance can be more specifically defined as an "automatic message forwarding mechanism". That is, when a subclass receives a message that it cannot respond to directly (i.e. a method that it doest implement), the language takes care of automatically sending the message to the superclass.
+3. That is, inheritance establishes a hierarchy where superclasses share their code with their subclasses.
+4. Subclasses are meant to be especialized versions of their superclass. Subclasses should be "the same, plus more" when compared to their superclass. They should offer the same public interface.
+5. Inheritance is ideal to solve the problem where you need a series of slightly different classes that share a lot of their behavior.
+6. A tell tale sign that inheritance needs to be applied is when there's code that contains an "if" statement that checks an attribute that contains the "category" of the object, and based on that determines what code to execute. Watch out for this antipattern and variables with names like "type", "category", "style".
+7. This is an antipattern that reveals that the object knows too much and needs to be broken down into smaller pieces. It increases the costs of change.
+
+## Applying inheritance
+
+8. Be on the lookout for existing classes that may lead you in the wrong path when it comes to inheritance. More often than not, classes that already exist in the codebase are not good candidate to extension via inheritance. Not good candidate to be superclasses.
+9. Maybe the path forward is to add a new class to serve as the base, and then update your existing class to be a subclass. Then add other subclasses as peers of it.
+10. For inheritance to work, the objects being modeled truly need to share a generalization-specialization relationship.
+11. The superclass needs to define the common behavior that is shared among subclasses. The subclasses define the specializations.
+12. In many cases, the superclass should be abstract. Meaning that they are not supposed to be instantiated. They represent an incomplete object which only becomes whole when looked at in the context of each of its subclasses.
+13. It almost never makes sense to create a superclass with only a single subclass. In fact, creating an inheritance hierarchy with two subclasses is often risky. You risk coming up with the wrong abstraction.
+14. Three subclasses is the sweetspot to commit to inheritance. Put off the decission to implement inheritance until that point, if you can. That's the point when there's enough information available to confidently determine an abstraction that will be useful and cost effective.
+15. If you put off implementing an inheritance hierarchy, then you won't be able to share code between the highly related classes. That will likely lead to code repetition, which is also costly. Consider what costs more having the repetition for the time being; or doing nothing and waiting for more information to avoid making the wrong decision.
+16. "Every decision you make includes two costs: one to implement it and another to change it when you discover that you were wrong".
+17. When refactoring towards an inheritance hierarchy, consider that "promoting" code from the concrete subclass up into the abstract superclass is often easier and less error prone.
+18. Errors in promoting are easy to identify and fix. All that can happen if you miss a promotion is that a subclass that was meant to inherit some behavior won't have it.
+19. Going in the oposite direction and missing a "demotion" will produce design errors that are harder to spot and have dire consequences if left alone.
+20. That would mean that concrete behavior, which does not apply to all subclasses, stays incorrectly in the abstract base class. That'll throw a wrench in the works and the whole inheritance hierarchy will be on shaky grounds. The abstract base class won't be generic enough and subclasses will the tempted to circumvent it.
+21. "The general rule for refactoring into a new inheritance hierarchy is to arrange code so that you can promote abstractions rather than demote concretions".
+22. The [template method pattern](https://en.wikipedia.org/wiki/Template_method_pattern) provides a clean way of defining a common basic algorithm in the superclass and allowing subclasses to supply specializations for it. Superclasses can define an algorithm, and call certain methods in key points within it. These are extension points. These methods can then be implemented by subclasses, letting them control part of the overall logic.
+23. When promoting concrete code to the more abstract superclass, consider using the template method when methods cannot be promoted wholesale, and have to be broken up instead. The parts that can be promoted become the template method, the parts that can't, become the specialization methods that each concrete subclass implements.
+24. To avoid future bugs, superclasses should provide default implementations for the specialization methods that it expects its subclasses to implement. These can be no-ops or, even better, raise errors. These errors let developes know that extending this inheritance hierarchy requires these methods to be implemented.
+25. [Hook methods](https://www.geeksforgeeks.org/ruby-hook-methods/) are slightly lighter iteration of the template method concept that helps alleviate superclass-subclass coupling. Same principle, let the superclass send a message that the subclass implements in order to provide a specialization.
+26. A hook method need not be a part of a common abstract algorithm, hence the slight distiction from the full fledged template method pattern.
+27. Beware of subclasses explicitly invoking functionality on their superclasses. Languages often offer keywords such as "[base](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/base)" or "[super](https://www.rubyguides.com/2018/09/ruby-super-keyword/)" that allow easily sending messages to superclasses. These are dangerous because they couple subclasses with their superclasses. They reveal that subclasses know the general algorithm.
+28. The template method pattern and hook methods invert this dependency, allowing the superclass to call the subclass. Allowing the subclass to provide specializations without knowing too much about the superclass.
+
+# Chapter 7: Sharing Role Behavior with Modules
+
+## About roles
+
+1. Using classical inheritance is always optional. Every situation that calls for inheritance could be solved using another technique that allows for sharing code between otherwise unrelated classes.
+2. The concept of "roles" is an alternative to classical inheritance. This concept emerges from the need to multiple classes to be used in a particular context to do the same thing. So they themselves need to share behavior.
+3. Think of a role as an augmented form of a duck type. A group of classes are said to play the same role when they belong in the same duck type or implement the same interface. In addition to exposing the same public interface, roles allow them to share internal behavior.
+4. Roles are ideal for storing responsiblities that are orthogonal to classes. It allows classes that are otherwise unrelated to share behavior. They establish a "behaves like" type of relationship between objects, as opposed to the "is a" relationship that is established with inheritance.
+5. When you include a module into an existing class, all the methods defined in the module become available to the class. This is the same thing that happens when a subclass inherits from a superclass.
+6. Many languages offer native features to allow for this kind of relationship between objects. In Ruby, we use [Modules](http://ruby-for-beginners.rubymonstas.org/advanced/modules.html). Other languages use [Mixins](https://www.pythontutorial.net/python-oop/python-mixin/), [Traits](https://www.php.net/manual/en/language.oop5.traits.php), [Default Methods](https://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html). Simply put, all these are ways of bundling together a group of methods that can be easily plugged into existing classes.
+
+## Writing inheritable code
+
+7. The same principles, techniques and antipatterns that apply to the design of duck types and inheritance hierarchies also apply to roles.
+8. Beware of objects that use a variable with a name like "type", "category" or "kind" to determine what code to execute. The object is likely concealing (and acting like) two or more types. These would be subclasses or module includers.
+9. When code is checking the type of an object to decide which message to send it, that's a signal that there's a missing abstraction. There's a duck type or role in there that needs to be explicitly brought to light. A public interface needs to be defined for it. If there is a need to share behavior, put it in a module, mixin, etc.
+10. "All of the code in the abstract superclass should apply to every class that inherits it".
+11. Beware of subclasses or module includers that override a superclass/module method just to rails a "not implemented" error. Chances are that if only part of the superclass applies to it, then it doesn't belong in the hierarchy. Or maybe there needs to be a redesign.
+12. Subclasses agree to the contract specified by their superclasses. They must respond to every message in the superclass' public interface, accept the same types of inputs and return the same types outputs.
+13. Put in other words, "subtypes must be substitutable for their supertype". That is, all subclasses should be act like their superclass. This means that any code that expects a superclass should be able to work, without change, with all its subclasses as well. That's the [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle).
+14. Through the concept of [variance](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)), subclasses have a slightly higher degree of freedom. Subclasses can accept inputs of more abstract types and can return outputs of more concrete types than what specified in the superclass public interface while still being substitutable for their superclass.
+15. For example, given a class Object that is a superclass of class String; if a method in a superclass accepts a String parameter, the subclass could accept Object and still be compliant. Likewise, if a method in a superclass returns an Object result, the subclass could return a String and sill be compliant. Still be substitutable.
+16. In other words, some code that sends a message with a String parameter can send the same message to a receiver that accepts Object. Likewise, some code that expects an Object as a result of sending a message can send the same message to a receiver that returns a String. Because a String "is an" Object, any code that expects an Object can work with a String, it'll just treat it like an Object and only access Object's public interface, which String fully supports.
+17. The template method pattern is the ideal technique for creating superclasses that are easy to inherit from. It allows clean separation of an abstract algorithm from the concrete specializations.
+18. Be on the the lookout for code that directly invokes superclass behavior with keywords like "super" or "base" etc. Instead, use hook methods to allow subclasses to contribute to parts of the common algorithm.
+19. Favor shallow hierarquies instead of deep ones. Narrow are also prefferable to wide. Wide ones are easier to live with as long as they are also shallow. But deep and wide ones are a maintenance nightmare. That is, keep the vertical levels of inheritance as low as you can. Hierarquies where a class iherits from another, which inherits from another, which also inherits from another, are hard to understand and maintain.
+
+# Chapter 8: Combining Objects with Composition
+
+## About composition
+
+1. Composition establishes a "has a" relationship between objects. It is a technique where you combine simple, independent objects to turn them into larger, more complex ones. Composition combines distinct parts so that the resulting entity is more than the sum of its parts.
+2. In composition, the composed or container object "has a" component, contained or part. Mechanically, that usually means that the container's class has an attribute which holds a reference to the part object. It's a dependency that's usually injected via constructor parameter.
+3. The container communicates with the part via its public interface. Part plays a role, and the container collaborates with it. This means that containers generally interact with their parts through interfaces or duck types.
+4. Composition is generally a cheaper alternative to code sharing when compared to inheritance.
+5. When refactoring from inheritance into composition, the parts sometimes need to share some code, in addition to sharing the same public interface. This is because all possible parts play the same role for the container. In these cases, an inheritance hierarchy of parts may be what's needed. Or they could also share behavior via modules or mixins.
+6. In technical terms, the technique of composition takes two forms: aggregation and, well composition. Under composition, parts don't have any use or value outside of its container objects. Under aggreggation, on the other hand, parts can live on their own.
+
+## Factories
+
+7. When creating certain objects becomes complex, encapsulate that complexity into a factory. That way the knowledge is stored in a single place in the code base. In principle, factories are simple: They are objects that create other objects.
+8. An advantage of factories is that they make easy the process of turning complex data structures into objects. You can have a "specification", stored as pure data in a file or database. The factory then can implement the logic that understand the meaning of the data structure and how to create living objects based on it.
+
+## Deciding between inheritance and composition
+
+9. Inheritance and composition are fundamentally code arrangement techniques where logic is distributed among various objects. With inheritance, objects are organized into a strict hierarchical structure and get automatic message delegation. With composition, objects are independent from each other but messages need to be manually delegated.
+10. In general "[favor composition over inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance)". Composition is lower cost (i.e. fewer dependencies) than inheritance in most circumstances where both could be used to solve a problem.
+
+## Pros and cons of inheritance
+
+11. When properly applied, inheritance is excellent at producing code that is reasonable, usable and exemplary.
+12. Inheritable code is reasonable because small changes in code can produce great changes in behavior. This is because code near the top of the hierarchy is defined once but used by all subclasses. Changing such code allows to alter behavior of many subclasses.
+13. Inheritable code is usable because superclasses are literally designed to be easy to reuse. Inheritance hierarchies adhere to the [open-closed principle](https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle). It's easy to extend the hierarchy by creating new subclasses without having to touch existing code. Thus, reusing it.
+14. Inheritable code is exemplary because they intrinsically provide a clear path to extend them. Even novice programmers won't have a hard time creating new subclasses when the superclasses implement template methods and hooks which guide any extension efforts.
+15. One important disadvantage of inheritance is that the cost of mistakes is consiredably high. Incorrect applications of inheritance are costly, whether it be that the wrong abstraction was created or that inheritance was just the wrong tool for the job altogether.
+16. Another disadvantage is that, for other contexts outside of the hierarchy, the ways in which it's possible to interact with the hierarchy are limited. If the behavior defined within the hierarchy needs to be used, a subclass needs to be created. Other use cases may be incapable of tolerating that dependency.
+17. If you're writing a framework or a library, this aspect becomes even more important. You can't know all the scenarios in which your library will be used, and forcing users to create subclasses in order to reuse the logic defined in the hierarchy may be more than what the can afford.
+
+## Pros and cons of composition
+
+18. "When using composition, the natural tendency is to create many small objects that contain straightforward responsibilities that are accessible through clearly defined interfaces". "Composition results in applications built of simple, pluggable objects that are easy to extend and have a high tolerance for change".
+19. When properly applied, composition is excellent at producing code that is transparent, reasonable and usable.
+20. Composable code is transparent because small objects are easy to understand and changes have obvious effects. These objects also don't necessarity form part of hierarchies, which means they are not susceptible to changes in superclasses.
+21. Composable code is reasonable because its easy to extend behavior by just implementing new objects that play the role of parts. All that new parts need to do is implement the public interface that the container object already expects.
+22. Composable code is usable because its made up of small independent objects. They don't have any structural dependencies preventing them from being reused in different contexts, completely unrelated to the container or even the part role.
+23. One disadvantage of composition is the fact that it may be more difficult to understand how the whole application works. While the individual objects may be small and simple; how they come together to solve problems may not be.
+24. Another disadvantage is that objects need to delegate messages to each other manually, as opposed to inheritance where this happens automatically. This means that there is the explicit dependency of the container object having to know which messages to call on its parts.
+25. Composition excels at separating containers from parts and assembling such objects. However, it doesn't have an answer for the scenario where it is necessary to handle a collection of types of parts that are very similar to each other. That's where inheritance comes in.
+26. Use inheritance of "is a" relationships. Use duck types, interfaces, and behavior sharing via modules or mixins for "behaves like a" relationships. Use composition for "has a" relationships.
+
+# Chapter 9: Designing Cost-Effective Tests
+
+## The benefits of testing
+
+1. The goal of design is to write code that is easy to change. In order to do that, we need good object-oriented design skills, good refactoring skills and good testing skills.
+2. Good object-oriented design skills are needed because badly designed code, by definition, is hard to change.
+3. Good refactoring skills are needed because design needs to be evolving constantly. As new requirements and new information about the domain becomes available, the code needs to adapt.
+4. Good testing skills are needed because high value, solid tests enable continuous refactoring without fear of breaking the code.
+5. Just like design, the true purpose of testing is to reduce costs. Tests do help reduce bugs, provide documentation, and improve the design; but those are only the means through which tests achieve their ultimate goal of reducing the cost of change.
+6. **Tests help by finding bugs**: Test help expose bugs early in the process. Bugs are easier to find and cheaper to correct the closer in time we are to their introduction. Tests done at the same time a feature is being implemented catches bugs before they go out the door. Bug caught early are not given the change to cause problems or have code depend on them.
+7. **Tests help by supplying documentation**: Tests represent the best and most reliable documentation of the design. When static documents and memories get outdated and/or disappear, tests remain. Write tests that tells the story of how the code works.
+8. **Tests help by deferring design decisions**: As a code base evolves, there will be spots in the code that are less than stellar. Spots which we're not confident yet to commit to a particular design. So we postpone making a decision and hack together a solution that works today. However, we know that it will need to be refactored to handle the requirements of tomorrow. These spots represent a lack of knowledge. Knowledge that the design is waiting for in order to improve. While waiting for that knowledge to come, we put the hack behind a clear, stable public interface and write our tests against that. In doing so, we'll be free to refactor into a good design when the missing information arrives. Knowing that the tests have our backs.
+9. **Tests help by supporting abstractions**: "Good design naturally progresses toward small independent objects that rely on abstractions." One disadvantage to this is that, whicl small independent objects are easy to understand by themselves, the behavior of the whole application, with all the little objects working together, becomes obscured. Tests solve that problem by highlighting the abtractions, their interfaces, how to work with them, and how they work together.
+10. **Tests help by exposing design flaws**: If tests are hard to write, that's the perfect indicator that the code under test is hard to reuse. Which indicates high coupling, which indicates increased costs of change. If testing an object requires a lot of setup and a lot of other objects, then it requires too much context and has too many dependencies.
+
+## What, when and how to test
+
+11. "One simple way to get better value from tests is to write fewer of them. The safest way to accomplish this is to test everything just once and in the proper place".
+12. Tests should focus only on the incoming messages that are defined in each object's public interface. That is, the public methods. Public interfaces expose the services that a class offers its users. They are also stable, so depending on them is safe. Tests that cover public methods are resilient to refactorings and add value because they excercise objects in the same way that their users in application code do. 
+13. Never test private methods. They are meant to be used by the object internally. They change often and other objects should not depend on them because they will have to change with them. The same applies to tests. Tests that excercise private code break on every refactoring.
+14. An object's test suite should never assert on the return value of outgoing messages that it sends to other objects. These messages are part of the public interface of the reciever object, so the receiver's test suite should be the one testing it.
+15. On the other hand, an object's test suite should always assert that necessary outgoing messages are sent, and with the correct parameters.
+16. A "test of state" is a test that asserts on the return value of a method.
+17. A "test of behavior" is a test that asserts on the whether the object under test calls a particular method on another object, how many times, and with what paramenters.
+18. A "query" is a method call with no side effects that is only made to get some value back.
+19. A "command" is a method call that has side effects that are important to the overall application.
+20. All public methods should be covered by tests of state. A test suite should only cover the public methods of its own object under test. Queries should not be tested for state or behavior. Commands should be tested for behavior.
+21. Write tests first when it makes sense to do so. Writing tests before implementing the feature establishes an intention for the design from the beginning. Since tests are reuse, they make sure the code to be written will have the bare minimum of reusability.
+22. Test first is no silver bullet though. Even though it helps steer the design in the right direction, by itself, it wont produce a well designed application. Fundamental object-oriented design techniques need to be applied.
+23. Well designed applications are easy to change. Well designed tests may never have to change. This is because they depend on abstractions and public interfaces, which are stable.
+24. Two major styles of testing exist: Behavior Driven Development and Test Driven Development.
+25. "BDD takes an outside-in approach, creating objects at the boundary of an application and working its way inward, mocking as necessary to supply as-yet-unwritten objects".
+26. "TDD takes an inside-out approach, usually starting with tests of domain objects and then reusing these newly created domain objects in the tests of adjacent layers of code".
+27. Both styles can be followed to produce valuable tests.
+
+## Writing valuable tests
+
+28. Incoming messages (I.e. public methods) need to be covered by tests of state. That is, validating the values that they return.
+30. Be on the lookout for public methods that don't receive any calls. These are good candidates for deletion. If no other object calls it, then it needs to be private.
+31. Objects should be tested in isolation. When that's not possible, there's a problem with the design. It means that the object is too coupled to its collaborators and can'e be reused on its own. It needs to be refactored.
+32. It's important that objects are tested in isolation because a test suite should care only about the one object that its testing. The other object will be tested by its own test suite. Changes in an object should affect its own test suite, not that of other objects.
+33. When the object under test depends on another object in order to work properly, refactor into dependency injection and have the test provide the dependency that way.
+34. When using dependency injection, don't pass in the concrete object in your tests. Instead, inject a test double or mock into the object under test.
+35. Dependency injection also hints at the emergence of a role, an interface or duck type. Instead of depending on a concrete class, refactor the object under test to depend on a role. The double or mock in the test suite will be one of the objects that play the collaborator role that the object under test expects.
+36. Private methods and query method calls need not be tested at all.
+37. Testing private methods is redundant because they are internal to the object under test and invoked by public methods, which already have tests.
+38. Private methods are also unstable. Not meant to be depended on because they change often. That will make for brittle tests.
+39. Private methods covered by tests may mislead others in thinking that the method is stable and thus, dependable.
+40. Query method call results are not relevant to the overall application, only to the object under test. They are hidden within it. Also, the receiver of the query already includes tests for it, given that its part of its public interface. So, they should be ignored by the test suite.
+41. Command method calls do need to be covered by tests in order to prove that they were called and with the correct parameters. In other words, it is the responsibility of the object under test to send that message, so its test suite needs to prove it.
+42. Mocks are the way to test that command messages get sent. They help with tests of behavior. Using mocks, injected into the object under test, a test case can validate that the method is called properly.
+43. Commands should be tested for behavior, not state. So, mocks should not be used for tests of state. That is, tests should not be concerned with asserting on what they return. However, they can be configured to return some value, if the operation requires it.
+44. In dynamically typed languages that don't have the compiler to do type checks, it is important to test objects for conformance with the public interfaces of their roles, and for proper integration with their inheritance hierarchies.
+45. "Tests should document the existence of roles, prove that each of their players behave correctly, and show that dependents interact with them appropriately".
+46. Pragmatically, this means writing test cases that assert on whether objects implement the specific messages defined in their roles' public interface and those that their superclasses expect from them.
+47. Multiple subclasses will undopubtedly share many of the same tests. In those cases, try to encapsulate the testc ases into reusable components that every subclass' test suite can invoke. Just like it application code, it's better to avoid repetition.
+48. Testing abstract base classes can sometimes be challenging because they are not supposed to be instantiated. In static languages, this is downright impossible. For these scenarios, a test specific subclass can be created with minimal implementation that allows test to exercise de base class.
+49. To avoid test brittleness, test doubles that play certain roles and inherit from superclasses should also be tested for conformance.
