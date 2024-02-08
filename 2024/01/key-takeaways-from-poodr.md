@@ -145,22 +145,28 @@ I personally really like this book. In fact, I like to dust it off every now and
 23. Abstractions are generally much more stable than concretions. Because of this, **it is safer to depend on abstract classes** (e.g. interfaces and duck types) than on concrete ones.
 24. Avoid classes that have lots of dependencies. Any changes done to them produce a ripple effect of changes throughout the codebase. Also, because of that, people will go through great lengths to try to avoid changing them.
 25. When thinking about dependents and likelyhood of change, **the following are harmless**: 1. Classes with few dependents and low likelyhood of change (e.g. specialized infrastructure interaction classes). 2. Classes with few dependents and high likelyhood of change (e.g. concrete classes that implement your app's domain logic). 3. Classes with many dependents and low likelyhood of change (e.g. interfaces and other abstractions).
-25. When thinking about dependents and likelyhood of change, **the following is harmfull**: Classes with many dependents and high likelyhood of change (e.g. concrete classes that are used throughout the codebase). 
+25. When thinking about dependents and likelyhood of change, **the following is harmfull**: Classes with many dependents and high likelyhood of change (e.g. concrete classes that are used throughout the codebase).
+
+![Likelihood of change versus number of dependents](key-takeaways-from-poodr/likelihood-of-change-versus-number-of-dependents.png)
 
 # Chapter 4: Creating Flexible Interfaces
 
 ## About interfaces
 
 1. The messages that objects pass between each other are a big concern for design. In addition to what objects know (resposibilities), and who they know (dependencies), design cares about how they talk to one another. Messages pass between objects through their interfaces.
-2. Objects that expose too much of themselves and know too much about others are hard to reuse and make systems hard to change.
-3. Objects that minimize what they expose of themselves and know little about others are easily reusable and changeable.
-4. An object's **public interface** is the set of messages that it resonds to. That is, the set of methods that other objects are welcome to invoke. Good design calls for objects with clear and concise public interfaces.
-5. Classes should have one responsibility, but they will likely have many methods. Some methods are more general and expose the main features of a class, they are the services that the class offers its callers. These should make up the class' public interface. Other methods are more specific, serve to support those features, and contain implementation details internal to the class and uninteresting to callers. These make up the class' private interface.
-6. **The methods in a class' public interface**: 1. "Reveal its primary responsibility". 2. "Are expected to be invoked by others". 3. "Are not likely to change". 4. "Are safe for others to depend on". 5. "Are directly covered by tests".
-7. **The methods in a class' private interface**: 1. "Handle implementation details". 2. "Are not expected to be invoked by other objects". 3. "Are likely to change". 4. "Are unsafe for others to depend on". 5. "May not even be referenced in the tests".
-8. Public methods list the specific features of a class that allow it to fulfill its responsibility. They advertise to the world what's the purpose of the class they belong to.
-9. Public methods are stable, expected to not change often, so others are welcome to depend on them.
-10. Private methods are not stable at all. They are hidden from others so nobody should not depend on them.
+2. In a well designed application, the messages that pass between objects follow a pattern that's closer to the diagram on the right than that of the diagram on the left:
+
+![alt text](key-takeaways-from-poodr/communication-patterns.png)
+
+3. Objects that expose too much of themselves and know too much about others are hard to reuse and make systems hard to change.
+4. Objects that minimize what they expose of themselves and know little about others are easily reusable and changeable.
+5. An object's **public interface** is the set of messages that it resonds to. That is, the set of methods that other objects are welcome to invoke. Good design calls for objects with clear and concise public interfaces.
+6. Classes should have one responsibility, but they will likely have many methods. Some methods are more general and expose the main features of a class, they are the services that the class offers its callers. These should make up the class' public interface. Other methods are more specific, serve to support those features, and contain implementation details internal to the class and uninteresting to callers. These make up the class' private interface.
+7. **The methods in a class' public interface**: 1. "Reveal its primary responsibility". 2. "Are expected to be invoked by others". 3. "Are not likely to change". 4. "Are safe for others to depend on". 5. "Are directly covered by tests".
+8. **The methods in a class' private interface**: 1. "Handle implementation details". 2. "Are not expected to be invoked by other objects". 3. "Are likely to change". 4. "Are unsafe for others to depend on". 5. "May not even be referenced in the tests".
+9.  Public methods list the specific features of a class that allow it to fulfill its responsibility. They advertise to the world what's the purpose of the class they belong to.
+10. Public methods are stable, expected to not change often, so others are welcome to depend on them.
+11. Private methods are not stable at all. They are hidden from others so nobody should not depend on them.
 
 ## Discovering less obvious objects and messages
 
@@ -283,6 +289,8 @@ I personally really like this book. In fact, I like to dust it off every now and
 18. Be on the the lookout for code that directly invokes superclass behavior with keywords like "super" or "base" etc. Instead, use hook methods to allow subclasses to contribute to parts of the common algorithm.
 19. Favor shallow hierarquies instead of deep ones. Narrow is also prefferable to wide. Wide ones are easier to live with as long as they are also shallow. But deep and wide ones are a maintenance nightmare. That is, keep the vertical levels of inheritance as low as you can. Hierarquies where a class iherits from another, which inherits from another, which also inherits from another, are hard to understand and maintain.
 
+![alt text](key-takeaways-from-poodr/hierarchies-come-in-different-shapes.png)
+
 # Chapter 8: Combining Objects with Composition
 
 ## About composition
@@ -343,11 +351,13 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 ## What, when and how to test
 
+![alt text](key-takeaways-from-poodr/object-under-test-are-like-space-capsules.png)
+
 11. "One simple way to get better value from tests is to write fewer of them. The safest way to accomplish this is to test everything just once and in the proper place".
-12. **Tests should focus only on the incoming messages** that are defined in each object's public interface. That is, the public methods. Public interfaces expose the services that a class offers its users. They are also stable, so depending on them is safe. Tests that cover public methods are resilient to refactorings and add value because they excercise objects in the same way that their users in application code do. 
-13. **Never test private methods**. They are meant to be used by the object internally. They change often and other objects should not depend on them because they will have to change with them. The same applies to tests. Tests that excercise private code break on every refactoring.
-14. An object's test suite should **never assert on the return value of outgoing messages** that it sends to other objects. These messages are part of the public interface of the reciever object, so the receiver's test suite should be the one testing it.
-15. On the other hand, an object's test suite should **always assert that necessary outgoing messages are sent**, and with the correct parameters.
+12. **Tests should focus only on the incoming messages** that are defined in each object's public interface ("A" in the picture above). That is, the public methods. Public interfaces expose the services that a class offers its users. They are also stable, so depending on them is safe. Tests that cover public methods are resilient to refactorings and add value because they excercise objects in the same way that their users in application code do. 
+13. **Never test private methods** ("B" in the picture above). They are meant to be used by the object internally. They change often and other objects should not depend on them because they will have to change with them. The same applies to tests. Tests that excercise private code break on every refactoring.
+14. An object's test suite should **never assert on the return value of outgoing messages** that it sends to other objects ("C" in the picture above). These messages are part of the public interface of the reciever object, so the receiver's test suite should be the one testing it.
+15. On the other hand, an object's test suite should **always assert that necessary outgoing messages are sent**, and with the correct parameters ("C" in the picture above).
 16. A "test of state" is a test that asserts on the return value of a method.
 17. A "test of behavior" is a test that asserts on the whether the object under test calls a particular method on another object, how many times, and with what paramenters.
 18. A "query" is a method call with no side effects that is only made to get some value back.
@@ -362,6 +372,8 @@ I personally really like this book. In fact, I like to dust it off every now and
 27. "BDD takes an outside-in approach, creating objects at the boundary of an application and working its way inward, mocking as necessary to supply as-yet-unwritten objects".
 28. "TDD takes an inside-out approach, usually starting with tests of domain objects and then reusing these newly created domain objects in the tests of adjacent layers of code".
 29. **Both styles can be followed to produce valuable tests**.
+
+![alt text](key-takeaways-from-poodr/bdd-and-tdd-should-be-viewed-as-on-a-continuum.png)
 
 ## Writing valuable tests
 
