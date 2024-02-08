@@ -57,7 +57,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 ## About classes
 
-1. **Classes** are the most basic organizational structure of object-oriented systems written with class-based object oriented languages. As such, that's the first thing that we focus on when designing such systems.
+1. **Classes** are the most basic organizational structure of object-oriented systems written with class-based object-oriented languages. As such, that's the first thing that we focus on when designing such systems.
 2. Your first instinct should be to keep things simple. Use classes to model only the features that your application needs today and make sure that they are easy to change tomorrow.
 3. "Design is more the art of preserving changeability than it is the act of achieving perfection".
 
@@ -99,10 +99,140 @@ I personally really like this book. In fact, I like to dust it off every now and
 28. **Depend on behavior, not data: Hide data structures**: When code depends on or receives as input a complex data structure like a big array or hash; encapsulate the data structure in a class with clear interface, instead of accessing and manipulating the structure directly.
 29. Directly manipulating complex data structures is a style of coding tends to propagate. If the incoming data structure changes, even slightly, then a lot of your code needs to also change because it depends on its very particular structure.
 30. Handling complex raw data structures through classes and messages with clear intention revealing names, demystifies the structure and gives it meaning within the context of the application domain.
+
+> For example, instead of this:
+> 
+> ```ruby
+> class ObscuringReferences
+>   attr_reader :data
+> 
+>   def initialize(data)
+>     @data = data
+>   end
+> 
+>   def diameters
+>     # 0 is rim, 1 is tire
+>     data.collect { |cell| cell[0] + (cell[1] * 2) }
+>   end
+> end
+> ```
+> 
+> ```csharp
+> class ObscuringReferences
+> {
+>     int[][] data;
+> 
+>     public ObscuringReferences(int[][] data)
+>     {
+>         this.data = data;
+>     }
+> 
+>     public IEnumerable<int> GetDiameters()
+>     {
+>         return data.Select(cell => cell[0] + (cell[1] * 2));
+>     }
+> }
+> ```
+> 
+> ...do this:
+> 
+> ```ruby
+> class RevealingReferences
+>   attr_reader :wheels
+> 
+>   def initialize(data)
+>     @wheels = wheelify(data)
+>   end
+> 
+>   def diameters
+>     wheels.collect { |wheel| wheel.rim + (wheel.tire * 2) }
+>   end
+> 
+>   # now everyone can send rim/tire to wheel
+>   Wheel = Struct.new(:rim, :tire)
+> 
+>   def wheelify(data)
+>     data.collect { |cell| Wheel.new(cell[0], cell[1]) }
+>   end
+> end
+> ```
+> 
+> ```csharp
+> class RevealingReferences
+> {
+>     IEnumerable<Wheel> Wheels { get; set; }
+> 
+>     public RevealingReferences(int[][] data)
+>     {
+>         Wheels = Wheelify(data);
+>     }
+> 
+>     // This method is now more readable.
+>     public IEnumerable<int> GetDiameters()
+>     {
+>         return Wheels.Select(wheel => wheel.Rim + (wheel.Tire * 2));
+>     }
+> 
+>     // Now everyone can send rim/tire to wheel.
+>     record Wheel(int Rim, int Tire);
+> 
+>     private IEnumerable<Wheel> Wheelify(int[][] data)
+>     {
+>         return data.Select(cell => new Wheel(cell[0], cell[1]));
+>     }
+> }
+> ```
+
+
 31. **Enforce single responsibility everywhere: Extract extra responsibilities from methods**. Methods should also have a single responsibility. Just like classes, that makes them easy to reuse, change and understand.
 32. To determine if a method has a single responsibility, the same techniques that work for classes apply. Try to enunciate their purpose in a single sentence, and ask them what they do.
 33. Methods that iterate on items and act upon them too is a common case of multiple responsibilities. Separating iteration and action into two methods is a common refactoring to correct it.
 34. Complex calculations embedded within methods are also good candidates to be separated into other methods. It gives them a name and makes them reusable.
+
+> For example, instead of this:
+> 
+> ```ruby
+> def diameters
+>   wheels.collect {|wheel|
+>     wheel.rim + (wheel.tire * 2)}
+> end
+> ```
+> 
+> ```csharp
+> IEnumerable<int> GetDiameters()
+> {
+>     return Wheels.Select(wheel => wheel.Rim + (wheel.Tire * 2));
+> }
+> ```
+> 
+> ...do this:
+> 
+> ```ruby
+> # first - iterate over the array
+> def diameters
+>   wheels.collect {|wheel| diameter(wheel)}
+> end
+> 
+> # second - calculate diameter of ONE wheel
+> def diameter(wheel)
+>   wheel.rim + (wheel.tire * 2)
+> end
+> ```
+> 
+> ```csharp
+> // First - iterate over the collection.
+> IEnumerable<int> _GetDiameters()
+> {
+>     return Wheels.Select(wheel => GetDiameter(wheel));
+> }
+> 
+> // Second - calculate diameter of ONE wheel.
+> int GetDiameter(Wheel wheel)
+> {
+>     return wheel.Rim + (wheel.Tire * 2);
+> }
+> ```
+
 35. These refactorings are useful and necessary even when you don't know the what the final design will look like. In fact, these refactorings (and good practices like these) will often reveal the final design.
 36. Small methods with single responsibility have many benefits. They: Make a class's details, features and components more obvious, are self-documenting, encourage reuse, establish a style of programming that is self-perpetuating, become easy to move to another class when and if that time comes.
 37. **Enforce single responsibility everywhere: Isolate extra responsibilities in classes**. Move the responsibilities that are extraneous to a class into another class. If you can afford it, create a separate class to hold them. If not, at least encapsulate them in an embedded class so that they are contained and don't leak.
@@ -132,13 +262,118 @@ I personally really like this book. In fact, I like to dust it off every now and
 11. [**Dependency injection**](https://en.wikipedia.org/wiki/Dependency_injection). It can help eliminate dependencies on concrete classes. Instead of instantiating new objects of another class inside your object, let it receive it as a constructor or method parameter. The object's users can do the instantiation.
 12. An object that knows less can often times do more. The knowledge of how to instantiate a particular object limits its potential. Object creation and utilization don't need to be contained within the same unit of code.
 13. When an object hard-codes the reference to a class, it advertises that it can't work with any other type. Replace the reference to the concrete class with an abstraction (e.g. an [interface](https://en.wikipedia.org/wiki/Interface_(object-oriented_programming)) or [duck type](https://en.wikipedia.org/wiki/Duck_typing)). That gives it the flexibility to be able to collaborate with other objects that respond to the same messages.
+
+> With dependency injection you can turn this:
+> 
+> ```ruby
+>  1 class Gear
+>  2   attr_reader :chainring, :cog, :rim, :tire
+>  3   def initialize(chainring, cog, rim, tire)
+>  4     @chainring = chainring
+>  5     @cog       = cog
+>  6     @rim       = rim
+>  7     @tire      = tire
+>  8   end
+>  9
+> 10   def gear_inches
+> 11     ratio * Wheel.new(rim, tire).diameter
+> 12   end
+> 13   # ...
+> 14 end
+> ```
+> 
+> ```csharp
+> class Gear
+> {
+>     float Ratio { get; set; }
+>     int Rim { get; set; }
+>     int Tire { get; set; }
+> 
+>     public Gear(float ratio, int rim, int tire)
+>     {
+>         Ratio = ratio;
+>         Rim = rim;
+>         Tire = tire;
+>     }
+> 
+>     public float GetGearInches()
+>     {
+>         return Ratio * new Wheel(Rim, Tire).GetDiameter();
+>     }
+> }
+> ```
+> 
+> Into this:
+> 
+> ```ruby
+>  1 class Gear
+>  2   attr_reader :chainring, :cog, :wheel
+>  3   def initialize(chainring, cog, wheel)
+>  4     @chainring = chainring
+>  5     @cog       = cog
+>  6     @wheel     = wheel
+>  7   end
+>  8
+>  9   def gear_inches
+> 10     ratio * wheel.diameter
+> 11   end
+> 12   # ...
+> 13 end
+> ```
+> 
+> ```csharp
+> class Gear
+> {
+>     float Ratio { get; set; }
+>     Wheel Wheel { get; set; }
+> 
+>     // Instead of rim and tire, Gear's constructor now receives a wheel.
+>     public Gear(float ratio, Wheel wheel)
+>     {
+>         Ratio = ratio;
+>         Wheel = wheel;
+>     }
+> 
+>     public float GetGearInches()
+>     {
+>         // Instead of creating a new wheel, it uses the one that's been injected.
+>         return Ratio * Wheel.GetDiameter();
+>     }
+> }
+> ```
+
 14. Sometimes it is not possible to remove a dependency from an object. In those cases, your best bet is to isolate it.
 15. **Isolate dependencies: Isolate instance creation**. Sometimes it is not possible to apply dependency injection. In those cases, the next best thing is to encapsulate instantiation of external classes into their own methods.
 16. An instantiation encapsulated in a method allows the code to clearly and explicitly communicate that there's an extraneous dependency here. One that we'd like to remove but for now cannot. We also protect the class from that dependency propagating through it.
 17. **Isolate dependencies: Isolate vulnerable external messages**. The same technique can be applied to invocations of methods on external classes. Encapsulate such calls into their own methods in order to contain the dependency.
+
+> Here's how isolating some dependencies could look like. From this:
+> 
+> ```csharp
+> float GetGearInches()
+> {
+>     return Ratio * new Wheel(Rim, Tire).GetDiameter();
+> }
+> ```
+> 
+> ...to this:
+> 
+> ```csharp
+> float GetGearInches()
+> {
+>     return Ratio * GetWheelDiameter();
+> }
+> 
+> // The dependency on the Wheel class is isolated in this method.
+> int GetWheelDiameter()
+> {
+>     return new Wheel(Rim, Tire).GetDiameter();
+> }
+> ```
+
 18. **Reduce argument dependencies: Use keyword arguments**. If your language supports them, keyword arguments are a great way of reducing the dependency incurred via method invocations. They allow the parameters to be sent in any order, which means that changes to the method's definition and signature are less likely to cause the callers to have to also change. Also, they have a self-documenting property on both caller and callee. (See [Named arguments in C#](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/named-and-optional-arguments) and [keyword arguments in Ruby](https://thoughtbot.com/blog/ruby-2-keyword-arguments)).
 19. **Reduce argument dependencies: Explicitly define defaults**. If your language has the feature, parameter defaults are a great way of reducing dependencies to method parameters, as establishing a default for a parameter makes it optional.
-20. **Reduce argument dependencies: Isolate multiparameter initialization**. If you don't own the code for a complex object initialization or method invocation, you can always encapsulate it in an object or method of your own. I can be done with a thin wrapper that exposes an interface that follows the techniques we've discussed and that uses the language of your application.
+20. **Reduce argument dependencies: Isolate multiparameter initialization**. If you don't own the code for a complex object initialization or method invocation, you can always encapsulate it in an object or method of your own. It can be done with a thin wrapper that exposes an interface that follows the techniques we've discussed and that uses the language of your application.
 21. Classes should depend on things that change less often than they do.
 22. There are three truths about code related to change and dependencies: 1. "Some classes are more likely to change than others". 2. "Concrete classes are more likely to change than abstract classes". 3. "Changing a class that has many dependents will have many consequences".
 23. It's OK to depend on classes with a low likelihood of change. For example, classes in the built-in library of your language generally will change less than your own custom classes. Framework classes commonly change less often too, but that may not always be the case if you framework is new or rapidly evolving.
@@ -172,7 +407,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 12. When analyzing a problem domain, the nouns in the narrative usually become your first classes. These are called "**Domain Objects**".
 13. Don't let Domain Objects be your only classes though. Shift your focus into messages and away from classes to discover new, less obvious objects that will home key functionality. Not doing so will risk overloading your domain objects with more responsibility than what they can handle.
-14. [UML sequence diagrams](https://en.wikipedia.org/wiki/Sequence_diagram) are an excellent way to explore design alternatives. You can use them to draft objects and their interactions. I.e. the messages they send each other. They are quick, low cost and allow easy communication of ideas between team members.
+14. [UML sequence diagrams](https://en.wikipedia.org/wiki/Sequence_diagram) are an excellent way to explore design alternatives. You can use them to draft objects and their interactions. I.e. the messages they send each other. They are quick, low cost and allow easy communication of ideas between team members. Here's an online tool that generates them based on plain text: [sequencediagram.org](https://sequencediagram.org/).
 15. The transition from class-based design to message-based design is one that yields more flexible applications. It means asking "I need to send this message, who should respond to it?" instead of "I know I need this class, what should it do?".
 
 ## Focusing on "What" instead of "How"
@@ -180,17 +415,125 @@ I personally really like this book. In fact, I like to dust it off every now and
 16. Public methods should focus on "What" instead of "How". That is, they should express what the caller wants instead of how the callee must behave.
 17. If you're in a situation where an object calls many methods on another in succession, try to refactor so that all the logic is executed as a result of a single message. This consolidation reduces the size of the second object's public interface, which reduces what callers need to know about it, which reduces dependency, which makes change easier. The caller only knows "what" it needs, not "how" to make the callee deliver.
 
+> When focusing on "what" instead of "how", code like this:
+> 
+> ```csharp
+> class Trip
+> {
+>     IEnumerable<Bicycle> Bicycles { get; set; }
+>     Mechanic Mechanic { get; set; }
+> 
+>     public void Prepare()
+>     {
+>         foreach (var bike in Bicycles)
+>         {
+>             Mechanic.CleanBicyble(bike);
+>             Mechanic.PumpTires(bike);
+>             Mechanic.LubeChain(bike);
+>             Mechanic.CheckBrakes(bike);
+>         }
+>     }
+> }
+> 
+> class Mechanic
+> {
+>     public void CheckBrakes(Bicycle bike) { }
+>     public void CleanBicyble(Bicycle bike) { }
+>     public void LubeChain(Bicycle bike) { }
+>     public void PumpTires(Bicycle bike) { }
+> }
+> ```
+> 
+> Can be transformed into code like this:
+> 
+> ```csharp
+> class Trip
+> {
+>     IEnumerable<Bicycle> Bicycles { get; set; }
+>     Mechanic Mechanic { get; set; }
+> 
+>     // This method was greatly simplified and its dependencies were reduced.
+>     public void Prepare()
+>     {
+>         foreach (var bike in Bicycles)
+>         {
+>             Mechanic.PrepareBicycle(bike);
+>         }
+>     }
+> }
+> 
+> class Mechanic
+> {
+>     public void PrepareBicycle(Bicycle bike)
+>     {
+>         CleanBicyble(bike);
+>         PumpTires(bike);
+>         LubeChain(bike);
+>         CheckBrakes(bike);
+>     }
+> 
+>     // Notice how Mechanic's public interface was reduced considerably.
+>     // All of these methods are private now.
+>     private void CheckBrakes(Bicycle bike) { }
+>     private void CleanBicyble(Bicycle bike) { }
+>     private void LubeChain(Bicycle bike) { }
+>     private void PumpTires(Bicycle bike) { }
+> }
+> ```
+
 ## Liberate objects from their context
 
 18. The things that an object knows about others make up its context. What other objects it calls and how. What it needs in order to be able to work.
 19. A good design tries to allow objects to work with minimal context. "Objects that have a simple context are easy to use and easy to test; they expect few things from their surroundings. Objects that have a complicated context are hard to use and hard to test; they require complicated setup before they can do anything".
 20. In order to reduce context, we need to reduce the knowledge that callers have about the other components they call. A simple public interface helps with that. In practical terms that means fewer and less verbose methods, fewer parameters, fewer dependencies. 
-21. Focusing on what the caller wants instead of what the callee does is a way of keeping context in check. This allows objects to collaborate with others regardless of the type they are and what they do.
+21. **Objects need to trust their collaborators to do their part**. Focusing on what the caller wants instead of what the callee does is a way of keeping context in check. This allows objects to collaborate with others regardless of the type they are and what they do.
 22. Dependency injection is a mechanism through which objects can collaborate with others when they don't know their type. A dependency injected via parameter (declared as an interface or duck type) hides its identity from its user.
 23. Naming the methods of this injected dependency from the perspective of the caller reveals a generic interface that offers the features that the caller wants in the vocabulary that it understands. The caller does not need to know what the injected dependency does, only what it needs it to do.
 24. Highly coupled objects with verbose public interfaces say to their collaborators: "I know what I want, and I know how you do it".
 25. More decoupled objects with concise public interfaces say to their collaborators: "I know what I want, and I know what you do".
 26. Highly decoupled objects with concise public interface and minimal required context say to their collaborators: "I know what I want, and I trust you to do your part."
+
+When objects trust their collaborators, and focus on what they want instead of what others do, the previous Trip/Mechanic example can become like this:
+
+> ```csharp
+> class Trip
+> {
+>     public IEnumerable<Bicycle> Bicycles { get; set; }
+>     Mechanic Mechanic { get; set; }
+> 
+>     public void Prepare()
+>     {
+>         // Trip now fully trusts Mechanic, and doesn't even know what it does.
+>         Mechanic.PrepareTrip(this);
+>     }
+> }
+> 
+> class Mechanic
+> {
+>     // The knowledge of "how a mechanic prepares a trip" now completely lives
+>     // within Mechanic.
+>     public void PrepareTrip(Trip trip)
+>     {
+>         foreach (var bike in trip.Bicycles)
+>         {
+>             PrepareBicycle(bike);
+>         }
+>     }
+> 
+>     private void PrepareBicycle(Bicycle bike)
+>     {
+>         CleanBicyble(bike);
+>         PumpTires(bike);
+>         LubeChain(bike);
+>         CheckBrakes(bike);
+>     }
+> 
+>     private void CheckBrakes(Bicycle bike) { }
+>     private void CleanBicyble(Bicycle bike) { }
+>     private void LubeChain(Bicycle bike) { }
+>     private void PumpTires(Bicycle bike) { }
+> }
+> ```
 
 ## Rules of thumb for writing code with good interfaces
 
@@ -199,6 +542,13 @@ I personally really like this book. In fact, I like to dust it off every now and
 29. **Minimize context**. Focus on "what" instead of "how" when designing public interfaces. Favor public methods that allow callers to access your classes' functionality without having to know how they do it. Use interface and duck types to name methods from the perspective of and with the vocabulary of the callers.
 30. If you have to interact with a class that does not have a clean interface, and you don't own it or otherwise can't refactor it so that it does, isolate it. Use the same techniques for dependency isolation mentioned in Chapter 3. Wrap the invocation in a new class or method to contain it and give that wrapper a clean public interface.
 31. **Follow the law of Demeter**. The law of Demeter states that you shouldn't chain multiple method calls that navigate across many different types of objects. In other words "talk only to your close neighbors" or "use only one dot".
+
+> Violations ot the law of Demeter look like this:
+> 
+> ```csharp
+> customer.GetBicycle().Wheel.Rotate();
+> ```
+
 32. Violations of the law of Demeter make for code that's not TRUE. Changes in the object at the end of the chain ripple through the entire chain. This is unexpected and laborious, making the code neither Transparent nor Reasonable. The class that uses the chain depends on all the objects in the chain, making it non-Usable. These chains are easy to replicate and harm changeability, making the code not Exemplary.
 33. Always evaluate the cost of violating the law of Demeter versus the cost of abiding by it. Method chains that ultimately read an attribute are generally less harmful. Also, method chains on really stable classes like those of your language library or framework have low impact.
 34. Delegation can appear to be a solution to law of Demeter violations. Unfortunately, all it does is remove the evidence that it's there.
