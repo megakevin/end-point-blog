@@ -102,21 +102,6 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 > For example, instead of this:
 > 
-> ```ruby
-> class ObscuringReferences
->   attr_reader :data
-> 
->   def initialize(data)
->     @data = data
->   end
-> 
->   def diameters
->     # 0 is rim, 1 is tire
->     data.collect { |cell| cell[0] + (cell[1] * 2) }
->   end
-> end
-> ```
-> 
 > ```csharp
 > class ObscuringReferences
 > {
@@ -135,27 +120,6 @@ I personally really like this book. In fact, I like to dust it off every now and
 > ```
 > 
 > ...do this:
-> 
-> ```ruby
-> class RevealingReferences
->   attr_reader :wheels
-> 
->   def initialize(data)
->     @wheels = wheelify(data)
->   end
-> 
->   def diameters
->     wheels.collect { |wheel| wheel.rim + (wheel.tire * 2) }
->   end
-> 
->   # now everyone can send rim/tire to wheel
->   Wheel = Struct.new(:rim, :tire)
-> 
->   def wheelify(data)
->     data.collect { |cell| Wheel.new(cell[0], cell[1]) }
->   end
-> end
-> ```
 > 
 > ```csharp
 > class RevealingReferences
@@ -191,13 +155,6 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 > For example, instead of this:
 > 
-> ```ruby
-> def diameters
->   wheels.collect {|wheel|
->     wheel.rim + (wheel.tire * 2)}
-> end
-> ```
-> 
 > ```csharp
 > IEnumerable<int> GetDiameters()
 > {
@@ -206,18 +163,6 @@ I personally really like this book. In fact, I like to dust it off every now and
 > ```
 > 
 > ...do this:
-> 
-> ```ruby
-> # first - iterate over the array
-> def diameters
->   wheels.collect {|wheel| diameter(wheel)}
-> end
-> 
-> # second - calculate diameter of ONE wheel
-> def diameter(wheel)
->   wheel.rim + (wheel.tire * 2)
-> end
-> ```
 > 
 > ```csharp
 > // First - iterate over the collection.
@@ -265,23 +210,6 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 > With dependency injection you can turn this:
 > 
-> ```ruby
->  1 class Gear
->  2   attr_reader :chainring, :cog, :rim, :tire
->  3   def initialize(chainring, cog, rim, tire)
->  4     @chainring = chainring
->  5     @cog       = cog
->  6     @rim       = rim
->  7     @tire      = tire
->  8   end
->  9
-> 10   def gear_inches
-> 11     ratio * Wheel.new(rim, tire).diameter
-> 12   end
-> 13   # ...
-> 14 end
-> ```
-> 
 > ```csharp
 > class Gear
 > {
@@ -304,22 +232,6 @@ I personally really like this book. In fact, I like to dust it off every now and
 > ```
 > 
 > Into this:
-> 
-> ```ruby
->  1 class Gear
->  2   attr_reader :chainring, :cog, :wheel
->  3   def initialize(chainring, cog, wheel)
->  4     @chainring = chainring
->  5     @cog       = cog
->  6     @wheel     = wheel
->  7   end
->  8
->  9   def gear_inches
-> 10     ratio * wheel.diameter
-> 11   end
-> 12   # ...
-> 13 end
-> ```
 > 
 > ```csharp
 > class Gear
