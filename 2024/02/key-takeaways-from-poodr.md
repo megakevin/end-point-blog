@@ -406,8 +406,8 @@ I personally really like this book. In fact, I like to dust it off every now and
 25. More decoupled objects with concise public interfaces say to their collaborators: "I know what I want, and I know what you do".
 26. Highly decoupled objects with concise public interface and minimal required context say to their collaborators: "I know what I want, and I trust you to do your part."
 
-When objects trust their collaborators, and focus on what they want instead of what others do, the previous Trip/Mechanic example can become like this:
-
+> When objects trust their collaborators, and focus on what they want instead of what others do, the previous Trip/Mechanic example can become like this:
+> 
 > ```csharp
 > class Trip
 > {
