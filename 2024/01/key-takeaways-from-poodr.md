@@ -12,7 +12,7 @@ tags:
 
 I personally really like this book. In fact, I like to dust it off every now and then to give it a re-read. To help with that, I've come up with a list of key takeaways from the book, with some of my own interpretations sprinkled in. For me, it serves as a sort of summary to help commit the book's contents to memory. I thought I'd share it with you today.
 
-> While this book uses the Ruby language for its examples and discussions, the concepts it describes are equally applicable to any classical object-oriented language. Dynamically typed language users do get a little more mileage than users of statically typed ones. But still, something like 90% of the content is relevant to both. For this summary, I've taken care not to tie the discussion to Ruby too much and be as language agnostic as possible.
+> While this book uses the Ruby language for its examples and discussions, the concepts it describes are equally applicable to any classical object-oriented language. Dynamically typed language users do get a little more mileage than users of statically typed ones. But still, something like 90% of the content is relevant to both. For this summary, I've taken care not to tie the discussion to Ruby too much and be as language agnostic as possible. I've chosen to write the code examples in C#.
 
 # Chapter 1: Object-Oriented Design
 
@@ -806,6 +806,23 @@ When objects trust their collaborators, and focus on what they want instead of w
 14. Through the concept of [variance](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)), subclasses have a slightly higher degree of freedom. Subclasses can accept inputs of more abstract types and can return outputs of more concrete types than those specified in the superclass' public interface while still being substitutable for their superclass.
 15. For example, given a class "Object" that is a superclass of a class "String"; if a method in a superclass accepts a String parameter, the subclass could override that same methog and accept Object and still be compliant. Likewise, if a method in a superclass returns an Object result, the subclass could return a String for that same method, and sill be compliant. Still be substitutable.
 16. In other words, some code that sends a message with a String parameter can send the same message to a receiver that accepts Object. Likewise, some code that expects an Object as a result of sending a message can send the same message to a receiver that returns a String. Because a String "is an" Object, any code that works with an Object can work with a String, it'll just treat it like an Object and only access Object's public interface, which String fully supports.
+
+> This is what variance allows:
+> 
+> ```csharp
+> class Superclass
+> {
+>     public virtual Object DoSomething(String parameter) => new Object();
+> }
+> 
+> class Subclass : Superclass
+> {
+>     public override String DoSomething(Object parameter) => "the result";
+> }
+> ```
+>
+> Be aware that C# currently does not support variance in parameters, only in return types. So this code would not actually work as it is, since the parameter types are different.
+
 17. The template method pattern is the ideal technique for creating superclasses that are easy to inherit from. It allows clean separation of an abstract algorithm from the concrete specializations.
 18. Be on the lookout for code that directly invokes superclass behavior with keywords like "super" or "base" etc. Instead, use hook methods to allow subclasses to contribute to parts of the common algorithm.
 19. Favor shallow hierarchies instead of deep ones. Narrow is also preferable to wide. Wide ones are easier to live with as long as they are shallow. But deep and wide ones are a maintenance nightmare. That is, keep the vertical levels of inheritance as low as you can. Hierarchies with many layers of superclasses are hard to understand and maintain.
