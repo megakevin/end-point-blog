@@ -484,7 +484,117 @@ When objects trust their collaborators, and focus on what they want instead of w
 
 10. Whenever you see conditional logic that sends a different message depending on the concrete class of a given object, that's the code telling you that it needs a duck type or interface.
 11. Come up with a message that makes sense from the perspective of the caller and add it to each of the classes expected by your code in the conditional. These classes now share the same public interface, they are of the same duck type. Then remove the conditional and just call that method. Replace conditional logic with [polymorphism](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)).
-12. In general, try to avoid code that explicitly mentions concrete classes or checks for the existence of particular methods in order to determine further behavior. Instead come up with a shared interface and send those messages to the collaborators regardless of their actual type.
+12. In general, try to avoid code that explicitly mentions concrete classes or checks for the existence of particular methods in order to determine further behavior. Instead, come up with a shared interface and send those messages to the collaborators regardless of their actual type.
+
+> Higly conditional and concrete logic like this:
+> 
+> ```csharp
+> class Trip
+> {
+>     public IEnumerable<Bicycle> Bicycles { get; set; }
+>     public IEnumerable<Customer> Customers { get; set; }
+>     public Vehicle Vehicle { get; set; }
+> 
+>     public void Prepare(IEnumerable preparers)
+>     {
+>         foreach (var preparer in preparers)
+>         {
+>             if (preparer is Mechanic)
+>             {
+>                 ((Mechanic)preparer).PrepareBicycles(Bicycles);
+>             }
+>             else if (preparer is TripCoordinator)
+>             {
+>                 ((TripCoordinator)preparer).BuyFood(Customers);
+>             }
+>             else if (preparer is Driver)
+>             {
+>                 ((Driver)preparer).GasUp(Vehicle);
+>                 ((Driver)preparer).FillWaterTank(Vehicle);
+>             }
+>         }
+>     }
+> }
+> 
+> class Mechanic
+> {
+>     public void PrepareBicycles(IEnumerable<Bicycle> bicycles) { }
+> }
+> 
+> class TripCoordinator
+> {
+>     public void BuyFood(IEnumerable<Customer> customers) { }
+> }
+> 
+> class Driver
+> {
+>     public void FillWaterTank(Vehicle vehicle) { }
+>     public void GasUp(Vehicle vehicle) { }
+> }
+> ```
+> 
+> ...can be rewritten to be more abstract if we leverage polymorphism. Like this:
+> 
+> ```csharp
+> class Trip
+> {
+>     public IEnumerable<Bicycle> Bicycles { get; set; }
+>     public IEnumerable<Customer> Customers { get; set; }
+>     public Vehicle Vehicle { get; set; }
+> 
+>     // This method can be much simpler now, and abstract.
+>     // Ready to collaborate with any "TripPreparer".
+>     // The conditional logic has been replaced with polymorphism.
+>     public void Prepare(IEnumerable<ITripPreparer> preparers)
+>     {
+>         foreach (var preparer in preparers)
+>         {
+>             preparer.PrepareTrip(this);
+>         }
+>     }
+> }
+> 
+> // New interface that all preparers implement. It has a single method.
+> // It greatly simplifies the communication between Trip and its many
+> // possible preparers.
+> interface ITripPreparer
+> {
+>     void PrepareTrip(Trip trip);
+> }
+> 
+> class Mechanic : ITripPreparer
+> {
+>     public void PrepareTrip(Trip trip)
+>     {
+>         PrepareBicycles(trip.Bicycles);
+>     }
+> 
+>     private void PrepareBicycles(IEnumerable<Bicycle> bicycles) { }
+> }
+> 
+> class TripCoordinator : ITripPreparer
+> {
+>     public void PrepareTrip(Trip trip)
+>     {
+>         BuyFood(trip.Customers);
+>     }
+> 
+>     private void BuyFood(IEnumerable<Customer> customers) { }
+> }
+> 
+> class Driver : ITripPreparer
+> {
+>     public void PrepareTrip(Trip trip)
+>     {
+>         FillWaterTank(trip.Vehicle);
+>         GasUp(trip.Vehicle);
+>     }
+> 
+>     private void FillWaterTank(Vehicle vehicle) { }
+>     private void GasUp(Vehicle vehicle) { }
+> }
+> ```
+
 13. The one exception to this rule is when dealing with exceptionally stable classes. Like those in your language libraries, where the introduction of duck types would mean modifying core language libraries. Explicit type checks against these classes are usually low cost.
 14. Duck types are abstract and less obvious in the code. That's why they need to be well documented and tested.
 
@@ -500,10 +610,49 @@ When objects trust their collaborators, and focus on what they want instead of w
 6. A tell tale sign that inheritance needs to be applied is when there's code that contains an "if" statement that checks an attribute that contains the "category" of the object, and based on that determines what code to execute. Watch out for this anti pattern and variables with names like "type", "category", "style" that control branches in behavior.
 7. This is an anti pattern that reveals that the object knows too much and needs to be broken down into smaller pieces. It increases the costs of change.
 
+> Here's what the anti pattern looks like:
+> 
+> ```csharp
+> class Bicycle
+> {
+>     string Style { get; set; }
+>     string TapeColor { get; set; }
+>     string FrontShock { get; set; }
+> 
+>     public Bicycle(Dictionary<string, string> options)
+>     {
+>         Style = options["style"];
+>         TapeColor  = options["tape_color"];
+>         FrontShock = options["front_shock"];
+>     }
+> 
+>     // Checking 'style' starts down a slippery slope.
+>     public Dictionary<string, string> GetSpares()
+>     {
+>         if (Style == "road")
+>         {
+>             return new() {
+>                 ["chain"] = "11-speed",
+>                 ["tire_size"] = "23",
+>                 ["tape_color"] = TapeColor
+>             };
+>         }
+>         else if (Style == "mountain")
+>         {
+>             return new() {
+>                 ["chain"] = "11-speed",
+>                 ["tire_size"] = "2.1",
+>                 ["front_shock"] = FrontShock
+>             };
+>         }
+>     }
+> }
+> ```
+
 ## Applying inheritance
 
 8. Be on the lookout for existing classes that may lead you in the wrong path when it comes to inheritance. More often than not, classes that already exist in the code base are not good candidate to extension via inheritance. Not good candidate to be superclasses.
-9. Maybe the path forward is to add a new class to serve as the base, and then update your existing class to be a subclass. Then add other subclasses as peers of it.
+9. The path forward is likely to be a new class to serve as the base, and then update your existing class to be a subclass. Then add other subclasses as peers of it.
 10. For inheritance to work, the objects being modeled truly need to share a generalization-specialization relationship.
 11. The superclass needs to define the common behavior that is shared among subclasses. The subclasses define the specializations.
 12. In many cases, the superclass should be **abstract**. Meaning that they are not supposed to be instantiated. They represent an incomplete object which only becomes whole when looked at in the context of each of its subclasses.
@@ -523,6 +672,116 @@ When objects trust their collaborators, and focus on what they want instead of w
 26. A hook method need not be a part of a common abstract algorithm, hence the slight distinction from the full fledged template method design pattern.
 27. Beware of subclasses explicitly invoking functionality on their superclasses. Languages often offer keywords such as "[base](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/base)" or "[super](https://www.rubyguides.com/2018/09/ruby-super-keyword/)" that allow easily sending messages to superclasses. These are dangerous because they couple subclasses with their superclasses. They reveal that subclasses know the general algorithm.
 28. The template method pattern and hook methods invert this dependency, allowing the superclass to call the subclass. Allowing the subclass to provide specializations without knowing too much about the superclass.
+
+> Here's an example of a properly factored inheritance hierarchy:
+> 
+> ```csharp
+> // The main purpose of the base class is to establish a basic functionality
+> // that can be easily extended by subclasses.
+> // This class cannot be instantiated, as given by the "abstract" modifier.
+> // This means that our application has no need of holding onto pure Bicycle
+> // instances, only the concrete subclasses are to be used.
+> // This abstract class is just a vehicle for sharing code between other classes.
+> abstract class Bicycle
+> {
+>     public string Size { get; set; }
+>     public string Chain { get; set; }
+>     public string TireSize { get; set; }
+> 
+>     // Notice how this constructor implements the template method pattern
+>     // in order to allow subclasses to make changes to the overall algorithm.
+>     // Specifically, it allows them to provide default values for the Chain and
+>     // TireSize attributes as well as run any additional logic after
+>     // initialization.
+>     public Bicycle(Dictionary<string, string> options)
+>     {
+>         Size = options.GetValueOrDefault("size");
+>         Chain  = options.GetValueOrDefault("chain") ?? GetDefaultChain();
+>         TireSize = options.GetValueOrDefault("tire_size") ?? GetDefaultTireSize();
+> 
+>         AfterInitialize(options);
+>     }
+> 
+>     // This method establishes the basic spares information and allows
+>     // subclasses to supply more by calling the GetLocalSpares hook method.
+>     public Dictionary<string, string> GetSpares()
+>     {
+>         var defaultSpares = new Dictionary<string, string> {
+>             ["tire_size"] = "23",
+>             ["chain"] = "11-speed"
+>         };
+> 
+>         return new(defaultSpares.Concat(GetLocalSpares()));
+>     }
+> 
+>     // This method, which is marked as abstract, has to be implemented by
+>     // subclasses. It allows subclasses to contribute specializations.
+>     protected abstract string GetDefaultTireSize();
+> 
+>     // These methods, marked as virtual, all have default implementations of
+>     // varying complexity but the important aspect is that they can be
+>     // overridden by subclasses. They also allow subclasses to contribute
+>     // specializations.
+>     protected virtual void AfterInitialize(Dictionary<string, string> options) { }
+>     protected virtual Dictionary<string, string> GetLocalSpares() => new();
+>     protected virtual string GetDefaultChain() => "11-speed";
+> }
+> 
+> // Notice how the following concrete subclasses are very simple.
+> // Extending this kind of code is easy, because creating new subclasses is easy.
+> // They leverage their abstract base class to implement most of their features.
+> // Their job is to supply specializations on the core logic defined in the base
+> // class. To do so, they override the hook methods defined by the base class.
+> class RoadBike : Bicycle
+> {
+>     public string TapeColor { get; set; }
+> 
+>     public RoadBike(Dictionary<string, string> options) : base(options) { }
+> 
+>     protected override void AfterInitialize(Dictionary<string, string> options) =>
+>         TapeColor = options.GetValueOrDefault("tape_color");
+> 
+>     protected override Dictionary<string, string> GetLocalSpares() =>
+>         new() { ["tape_color"] = TapeColor };
+> 
+>     protected override string GetDefaultTireSize() => "23";
+> }
+> 
+> class MountainBike : Bicycle
+> {
+>     public string FrontShock { get; set; }
+>     public string RearShock { get; set; }
+> 
+>     public MountainBike(Dictionary<string, string> options) : base(options) { }
+> 
+>     protected override void AfterInitialize(Dictionary<string, string> options)
+>     {
+>         FrontShock = options.GetValueOrDefault("front_shock");
+>         RearShock = options.GetValueOrDefault("rear_shock");
+>     }
+> 
+>     protected override Dictionary<string, string> GetLocalSpares() =>
+>         new() { ["front_shock"] = FrontShock };
+> 
+>     protected override string GetDefaultTireSize() => "2.1";
+> }
+> 
+> class RecumbentBike : Bicycle
+> {
+>     public string Flag { get; set; }
+> 
+>     public RecumbentBike(Dictionary<string, string> options) : base(options) { }
+> 
+>     protected override void AfterInitialize(Dictionary<string, string> options) =>
+>         Flag = options.GetValueOrDefault("flag");
+> 
+>     protected override Dictionary<string, string> GetLocalSpares() =>
+>         new() { ["flag"] = Flag };
+> 
+>     protected override string GetDefaultChain() => "10-speed";
+>     protected override string GetDefaultTireSize() => "28";
+> }
+> ```
 
 # Chapter 7: Sharing Role Behavior with Modules
 
