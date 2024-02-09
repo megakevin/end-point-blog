@@ -1,10 +1,11 @@
 ---
 author: "Kevin Campusano"
 title: "Key Takeaways from Practical Object-Oriented Design by Sandi Metz"
-date: 2024-01-22
+date: 2024-02-09
 tags:
 - object oriented design
 - ruby
+- csharp
 - books
 ---
 
