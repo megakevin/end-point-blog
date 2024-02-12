@@ -22,7 +22,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 1. Following the principles and patterns of object-oriented design produces code that is both cost-effective and a joy to work with. "Cost effective" means that it doesn't take more effort than necessary to evolve. To change.
 2. The reason design is important is because software changes. A good design is one that makes software easy to change.
 3. Object-oriented design sees the world as a collection of parts that interact with each other. The parts, we call "objects", and the interactions, we call "messages".
-4. In order to send messages to each other, objects need to have some knowledge about one another. This knowledge produce "dependencies" between them.
+4. In order to send messages to each other, objects need to have some knowledge about one another. This knowledge produces "dependencies" between them.
 5. Managing these dependencies is a big part of object-oriented design. OOD aims to create dependencies in such a way that they don't make the process of changing objects too difficult.
 6. Design is important no matter the size of the application. Because both small and large applications change. And change is what design allows. A badly designed small application will eventually become a badly designed large one.
 7. Design is the way in which code is arranged. Good design is an arrangement of code that makes change easy.
@@ -34,7 +34,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 11. **Design fails when you don't do it**. Code bases that lack in design will eventually evolve into unmaintainable messes. Change become increasingly hard even for the most minor new requirements. "Throwing everything away and beginning from scratch" becomes a viable alternative.
 12. **Design fails when you overdesign**. Armed with basic design skills, it's easy to fall into the trap of developing wrong abstractions, applying principles incorrectly, seeing the wrong pattern in the wrong context. Applications that suffer from overdesign become gigantic castles of code full of indirection that become hard to change.
-13. **Design fails when you separate it from programming**. Design is best executed as an iterative and incremental process with a quick feedback loop. The design needs to be adjusted frequently, as understanding of the domain changes. Design that is dictated to programmers from on high as part of a "[Big Up Front Design](https://en.wikipedia.org/wiki/Big_design_up_front)" are doomed to failure. Such arrangements are not agile enough to be resilient to requirement changes.
+13. **Design fails when you separate it from programming**. Design is best executed as an iterative and incremental process with a quick feedback loop. The design needs to be adjusted frequently, as understanding of the domain changes. Design that is dictated to programmers from on high as part of a "[Big Up Front Design](https://en.wikipedia.org/wiki/Big_design_up_front)" is doomed to failure. Such arrangements are not agile enough to be resilient to requirement changes.
 
 ## Agile and design
 
@@ -52,7 +52,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 20. **Technical debt** is borrowing time from the future. That is, putting out a bad design today in order to release a feature quickly. Tomorrow, when change comes, the bad design will prevent cost effective change. So time will have to be spent refactoring, turning the bad design into a good one. If refactoring doesn't happen, the debt increases, making future changes more and more expensive.
 21. How much design you do depends on your skill and your time frame. You can't do so much design that it prevents you from delivering on time. Design is an investment, and for an investment to be good, it needs to return some profit. Good design's returns are quick and plentiful.
-22. "The trick to getting getting the most bang for your design buck is to acquire an understanding of the theories of design and to apply them appropriately, at the tight time, and in the right amounts".
+22. "The trick to getting the most bang for your design buck is to acquire an understanding of the theories of design and to apply them appropriately, at the right time, and in the right amounts".
 
 # Chapter 2: Designing Classes with a Single Responsibility
 
@@ -69,7 +69,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 6. **Code should be "Reasonable"**. The cost of a change should be proportional to the size of the requirement that provoked the change.
 7. **Code should be "Usable"**. The code should be easy to reuse in other situations than the one it's currently being used on.
 8. **Code should be "Exemplary"**. The code should exhibit qualities that guide and/or encourage those who change it to keep and replicate those qualities.
-9. The [Single Responibility Principle](https://en.wikipedia.org/wiki/Single_responsibility_principle) is a prerequisite to creating code that is TRUE.
+9. The [Single Responsibility Principle](https://en.wikipedia.org/wiki/Single_responsibility_principle) is a prerequisite to creating code that is TRUE.
 
 ## Single Responsibility
 
@@ -91,14 +91,14 @@ I personally really like this book. In fact, I like to dust it off every now and
 22. Consider postponing design decisions when the information available to you today does not point clearly to a good design. Also, when the cost of not doing it now does not considerably make tomorrow's change more expensive.
 23. On the other hand, consider that a class that's left in a "bad state", may be reused by others. Making their code depend on badly designed code. The application will suffer as a result.
 24. The structure of a class is supposed to reveal your design's intention to other developers. When it doesn't, when it is not "Exemplary", then future maintenance costs increase.
-25. The tension between "improve it now" and "improve it later" is always present. Our jobs as designers is to strike a good balance "between the needs of the present and the possibilities of the future" so that the costs of change are kept low.
+25. The tension between "improve it now" and "improve it later" is always present. Our job as designers is to strike a good balance "between the needs of the present and the possibilities of the future" so that the costs of change are kept low.
 
 ## Techniques for writing code that's easy to change
 
 26. **Depend on behavior, not data: Hide instance variables**. Instead of accessing instance variables directly, use accessor methods. Even from within the class that owns them. "Always send messages to access data".
 27. That way you consolidate the knowledge of what the data represents in a single place. Single Responsibility Principle in action. Changing it becomes easy as a result because instead of changing references to a variable in potentially multiple places; you only need to change the definition of a method, in a single location.
 28. **Depend on behavior, not data: Hide data structures**: When code depends on or receives as input a complex data structure like a big array or hash; encapsulate the data structure in a class with clear interface, instead of accessing and manipulating the structure directly.
-29. Directly manipulating complex data structures is a style of coding tends to propagate. If the incoming data structure changes, even slightly, then a lot of your code needs to also change because it depends on its very particular structure.
+29. Directly manipulating complex data structures is a style of coding that tends to propagate. If the incoming data structure changes, even slightly, then a lot of your code needs to also change because it depends on its very particular structure.
 30. Handling complex raw data structures through classes and messages with clear intention revealing names, demystifies the structure and gives it meaning within the context of the application domain.
 
 > For example, instead of this:
@@ -148,7 +148,6 @@ I personally really like this book. In fact, I like to dust it off every now and
 > }
 > ```
 
-
 31. **Enforce single responsibility everywhere: Extract extra responsibilities from methods**. Methods should also have a single responsibility. Just like classes, that makes them easy to reuse, change and understand.
 32. To determine if a method has a single responsibility, the same techniques that work for classes apply. Try to enunciate their purpose in a single sentence, and ask them what they do.
 33. Methods that iterate on items and act upon them too is a common case of multiple responsibilities. Separating iteration and action into two methods is a common refactoring to correct it.
@@ -179,7 +178,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 > }
 > ```
 
-35. These refactorings are useful and necessary even when you don't know the what the final design will look like. In fact, these refactorings (and good practices like these) will often reveal the final design.
+35. These refactorings are useful and necessary even when you don't know what the final design will look like. In fact, these refactorings (and good practices like these) will often reveal the final design.
 36. Small methods with single responsibility have many benefits. They: Make a class's details, features and components more obvious, are self-documenting, encourage reuse, establish a style of programming that is self-perpetuating, become easy to move to another class when and if that time comes.
 37. **Enforce single responsibility everywhere: Isolate extra responsibilities in classes**. Move the responsibilities that are extraneous to a class into another class. If you can afford it, create a separate class to hold them. If not, at least encapsulate them in an embedded class so that they are contained and don't leak.
 38. Embedded classes say: This class only has meaning and value when thought about within the context of this other class.
@@ -293,7 +292,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 24. Abstractions are generally much more stable than concretions. Because of this, **it is safer to depend on abstract classes** (e.g. interfaces and duck types) than on concrete ones.
 25. Avoid classes that have lots of dependencies. Any changes done to them produce a ripple effect of changes throughout the code base. Also, because of that, people will go through great lengths to try to avoid changing them.
 26. When thinking about dependents and likelihood of change, **the following are harmless**: 1. Classes with few dependents and low likelihood of change (e.g. specialized infrastructure interaction classes). 2. Classes with few dependents and high likelihood of change (e.g. concrete classes that implement your app's domain logic). 3. Classes with many dependents and low likelihood of change (e.g. interfaces and other abstractions).
-27. When thinking about dependents and likelihood of change, **the following is harmfull**: Classes with many dependents and high likelihood of change (e.g. concrete classes that are used throughout the code base).
+27. When thinking about dependents and likelihood of change, **the following is harmful**: Classes with many dependents and high likelihood of change (e.g. concrete classes that are used throughout the code base).
 
 ![Likelihood of change versus number of dependents](key-takeaways-from-poodr/likelihood-of-change-versus-number-of-dependents.png)
 
@@ -664,7 +663,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 17. When refactoring towards an inheritance hierarchy, consider that "promoting" code from the concrete subclass up into the abstract superclass is often easier and less error prone.
 18. Errors in promoting are easy to identify and fix. All that can happen if you miss a promotion is that a subclass that was meant to inherit some behavior won't have it.
 19. Going in the opposite direction and missing a "demotion" will produce design errors that are harder to spot and have dire consequences if left alone.
-20. That would mean that concrete behavior, which does not apply to all subclasses, stays incorrectly in the abstract base class. That'll throw a wrench in the works and the whole inheritance hierarchy will be on shaky grounds. The abstract base class won't be generic enough and subclasses will the tempted to circumvent it.
+20. That would mean that concrete behavior, which does not apply to all subclasses, stays incorrectly in the abstract base class. That'll throw a wrench in the works and the whole inheritance hierarchy will be on shaky grounds. The abstract base class won't be generic enough and subclasses will be tempted to circumvent it.
 21. "The general rule for refactoring into a new inheritance hierarchy is to arrange code so that you can promote abstractions rather than demote concretions".
 22. The [template method pattern](https://en.wikipedia.org/wiki/Template_method_pattern) provides a clean way of defining a common basic algorithm in the superclass and allowing subclasses to supply specializations for it. Superclasses can define an algorithm, and call certain methods in key points within it. These are extension points. These methods can then be implemented by subclasses, letting them control part of the overall logic.
 23. When promoting concrete code to the more abstract superclass, consider using the template method when methods cannot be promoted wholesale, and have to be broken up instead. The parts that can be promoted become the template method, the parts that can't, become the specialization methods that each concrete subclass implements.
@@ -805,7 +804,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 12. Subclasses agree to the contract specified by their superclasses. They must respond to every message in the superclass' public interface, accept the same types of inputs and return the same types outputs.
 13. Put in other words, "subtypes must be substitutable for their supertype". That is, all subclasses should act like their superclass. This means that any code that expects a superclass should be able to work, without change, with all its subclasses as well. That's the [Liskov substitution principle](https://en.wikipedia.org/wiki/Liskov_substitution_principle).
 14. Through the concept of [variance](https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)), subclasses have a slightly higher degree of freedom. Subclasses can accept inputs of more abstract types and can return outputs of more concrete types than those specified in the superclass' public interface while still being substitutable for their superclass.
-15. For example, given a class "Object" that is a superclass of a class "String"; if a method in a superclass accepts a String parameter, the subclass could override that same methog and accept Object and still be compliant. Likewise, if a method in a superclass returns an Object result, the subclass could return a String for that same method, and sill be compliant. Still be substitutable.
+15. For example, given a class "Object" that is a superclass of a class "String"; if a method in a superclass accepts a String parameter, the subclass could override that same method and accept Object and still be compliant. Likewise, if a method in a superclass returns an Object result, the subclass could return a String for that same method, and sill be compliant. Still be substitutable.
 16. In other words, some code that sends a message with a String parameter can send the same message to a receiver that accepts Object. Likewise, some code that expects an Object as a result of sending a message can send the same message to a receiver that returns a String. Because a String "is an" Object, any code that works with an Object can work with a String, it'll just treat it like an Object and only access Object's public interface, which String fully supports.
 
 > This is what variance allows:
@@ -898,7 +897,7 @@ I personally really like this book. In fact, I like to dust it off every now and
 14. An object's test suite should **never assert on the return value of outgoing messages** that it sends to other objects ("C" in the picture above). These messages are part of the public interface of the receiver object, so the receiver's test suite should be the one testing it.
 15. On the other hand, an object's test suite should **always assert that necessary outgoing messages are sent**, and with the correct parameters ("C" in the picture above).
 16. A "test of state" is a test that asserts on the return value of a method.
-17. A "test of behavior" is a test that asserts on the whether the object under test calls a particular method on another object, how many times, and with what parameters.
+17. A "test of behavior" is a test that asserts on whether the object under test calls a particular method on another object, how many times, and with what parameters.
 18. A "query" is a method call with no side effects that is only made to get some value back.
 19. A "command" is a method call that has side effects that are important to the overall application.
 20. **All public methods should be covered by tests of state**. A test suite should only cover the public methods of its own object under test.
