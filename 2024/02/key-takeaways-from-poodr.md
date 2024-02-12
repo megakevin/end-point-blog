@@ -15,6 +15,8 @@ I personally really like this book. In fact, I like to dust it off every now and
 
 > While this book uses the Ruby language for its examples and discussions, the concepts it describes are equally applicable to any classical object-oriented language. Dynamically typed language users do get a little more mileage than users of statically typed ones. But still, something like 90% of the content is relevant to both. For this summary, I've taken care not to tie the discussion to Ruby too much and be as language agnostic as possible. I've chosen to write the code examples in C#.
 
+> Images taken from the book. Code taken from the book's examples in Ruby and translated to C#.
+
 # Chapter 1: Object-Oriented Design
 
 ## About design
