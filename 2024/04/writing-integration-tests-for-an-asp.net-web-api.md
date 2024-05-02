@@ -1,6 +1,6 @@
 ---
 author: "Kevin Campusano"
-title: "Writing Integration Tests for an ASP.NET Web API"
+title: "Writing integration tests for an ASP.NET Web API"
 date: 2024-04-25
 featured:
   image_url:
@@ -22,13 +22,13 @@ In this article, we're going to discuss how to write such tests for a Web API bu
 
 ## Introducing the project
 
-I'll use an existing ASP.NET Web API project to demonstrate how to write these tests. The API is part of a system that calculates the value of and offers quotes for used cars. As such, the API has an endpoint for calculating a vehicle quote, given its information and condition: `POST /api/Quotes`. It also has an endpoint for administration purposes that returns all the quotes that have been stored in the system's database: `GET /api/Quotes`. These are the two endpoints that we'll want to test.
+I'll use an existing ASP.NET Web API project to demonstrate how to write these tests. The API is part of a system that calculates the value of used cars and offers quotes for them. As such, the API has an endpoint for calculating a vehicle quote, given its information and condition: `POST /api/Quotes`. It also has an endpoint for administration purposes that returns all the quotes that have been stored in the system's database: `GET /api/Quotes`. These are the two endpoints that we'll want to test.
 
 [The source code is on GitHub](https://github.com/megakevin/end-point-blog-dotnet-8-demo), so feel free to browse. Also, I've organized it so that the changes that we'll make throughout this article are all contained in a single commit. [You can see the diff here](https://github.com/megakevin/end-point-blog-dotnet-8-demo/commit/5f971115e871f9d60792b825b4b9f590600b529b).
 
 The code base is organized as a [.NET solution](https://learn.microsoft.com/en-us/visualstudio/ide/solutions-and-projects-in-visual-studio?view=vs-2022), as evident by the [`vehicle-quotes.sln`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/vehicle-quotes.sln) file at the root of the repository. The Web API project can be found inside the [`VehicleQuotes.WebApi`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/tree/main/VehicleQuotes.WebApi) directory. The endpoints that we want to test are defined in the controller at [`VehicleQuotes.WebApi/Controllers/QuotesController.cs`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.WebApi/Controllers/QuotesController.cs).
 
-Our plan is to develop integration tests that exercise the entire stack. That is, tests that exercise the API's HTTP request handling as well as its database interactions. These are the steps that we'll take in order to do that:
+Our plan is to develop integration tests that exercise the entire stack. That is, the API's HTTP request handling as well as its database interactions. These are the steps that we'll take in order to do that:
 
 1. Create a new [xunit](https://xunit.net/) project where we will put our integration tests.
 2. Define a [test class fixture](https://xunit.net/docs/shared-context#class-fixture) that will connect our tests to a test database.
@@ -37,7 +37,7 @@ Our plan is to develop integration tests that exercise the entire stack. That is
 
 ## Setting up the integration tests project
 
-OK the first step is to create a new xunit project and add it to our solution. This can be done with this pair of commands:
+The first step is to create a new xunit project and add it to our solution. This can be done with this pair of commands:
 
 ```sh
 dotnet new xunit -o VehicleQuotes.IntegrationTests
@@ -110,7 +110,7 @@ With that, the project is set up. In the end, our [`VehicleQuotes.IntegrationTes
 
 Now, we need to make it possible for our API to interact with a test instance of our database when running within the context of our tests. This can be done with a properly configured [test class fixture](https://xunit.net/docs/shared-context#class-fixture). Let's see what that looks like.
 
-First of all we need an `appsettings` file for our test project that contains the test database connection string. I created an [`VehicleQuotes.IntegrationTests/appsettings.Test.json`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.IntegrationTests/appsettings.Test.json) file with these contents:
+First of all we need an `appsettings` file for our test project that contains the test database connection string. I created a [`VehicleQuotes.IntegrationTests/appsettings.Test.json`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.IntegrationTests/appsettings.Test.json) file with these contents:
 
 ```json
 {
@@ -127,7 +127,7 @@ First of all we need an `appsettings` file for our test project that contains th
 }
 ```
 
-We also need to tell .NET that it needs to include this file when building the project to run the tests. We do so by adding the following to the [`VehicleQuotes.IntegrationTests/VehicleQuotes.IntegrationTests.csproj`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.IntegrationTests/VehicleQuotes.IntegrationTests.csproj#L13) file:
+We also have to tell .NET that it needs to include this file when building the project to run the tests. We do so by adding the following to the [`VehicleQuotes.IntegrationTests/VehicleQuotes.IntegrationTests.csproj`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.IntegrationTests/VehicleQuotes.IntegrationTests.csproj#L13) file:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
@@ -139,7 +139,7 @@ We also need to tell .NET that it needs to include this file when building the p
 </Project>
 ```
 
-The important thing here is the `ConnectionStrings.VehicleQuotesContext` setting, which contains the test database connection string. Notice the value for `Database` in the connection string is appended with `_test`. This is how we make sure the tests run against a different database. The rest of the settings are unrelated to the test database but need to be defined for the Web API to work. These will obviously be different for every project. All in all, this file is meant to be a test version of the Web API's own `appsettings.json` file. [You can find it here](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.WebApi/appsettings.json).
+The important thing in this `appsettings` file is the `ConnectionStrings.VehicleQuotesContext` setting, which contains the test database connection string. Notice the value for `Database` in the connection string is appended with `_test`. This is how we make sure the tests run against a different database. The rest of the settings are unrelated to the test database, but need to be defined for the Web API to work. These will obviously be different for every project. All in all, this file is meant to be a test version of the Web API's own `appsettings.json` file. [You can find it here](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.WebApi/appsettings.json).
 
 > Our Web API supports [authentication via Bearer Token](https://swagger.io/docs/specification/authentication/bearer-authentication/). If you want to learn more about how I implemented that, [here's another blog post](https://www.endpointdev.com/blog/2022/06/implementing-authentication-in-asp.net-core-web-apis/) describing the process.
 
@@ -163,8 +163,8 @@ public class DatabaseFixture
     // the appsettings.Test.json file.
     public DatabaseFixture()
     {
-        // Tests can run in parallel. This lock is meant to make this cod
-        //  thread safe.
+        // Tests can run in parallel. This lock is meant to make this code
+        // thread safe.
         lock (_lock)
         {
             if (!_databaseInitialized)
@@ -226,17 +226,17 @@ public class DatabaseFixture
 
 I've made sure to include some comments on that class trying to explain what it does, so feel free to review. Much of it was inspired by [.NET's official docs](https://learn.microsoft.com/en-us/ef/core/testing/testing-with-the-database#creating-seeding-and-managing-a-test-database).
 
-This class serves the purpose of allowing the tests suite to connect and interact with the test database. It does so by performing three tasks:
+This class serves the purpose of allowing the tests suite to connect to and interact with the test database. It does so by performing three tasks:
 
 1. Resetting the database at the beginning of every test run. This happens in the constructor.
-2. Allowing the creation of new [`VehicleQuotesContext`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.WebApi/Data/VehicleQuotesContext.cs) instances which connect to the test database. Tests will use it to interact with the database.
+2. Allowing the creation of new [`VehicleQuotesContext`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.WebApi/Data/VehicleQuotesContext.cs) instances which connect to the test database. Tests will use that to interact with the database.
 3. Offering the capability for tests to be run within DB transactions. This makes sure they don't affect one another, and that they encounter the database in a clean state and also leave it that way.
 
 ## Writing some integration tests
 
 Now we can finally start writing some tests. Let's start with a simple one that makes a GET request to the "fetch all quotes" endpoint that I mentioned at the beginning: `GET /api/Quotes`. The one defined in the `GetAll` method in the [`VehicleQuotes.WebApi/Controllers/QuotesController.cs`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.WebApi/Controllers/QuotesController.cs) controller.
 
-We create a new [`VehicleQuotes.IntegrationTests/Controllers/QuotesControllerTests.cs`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.IntegrationTests/Controllers/QuotesControllerTests.cs) and write our test in there. It looks like this:
+We create a new [`VehicleQuotes.IntegrationTests/Controllers/QuotesControllerTests.cs`](https://github.com/megakevin/end-point-blog-dotnet-8-demo/blob/main/VehicleQuotes.IntegrationTests/Controllers/QuotesControllerTests.cs) file and write our test in there. It looks like this:
 
 ```csharp
 using System.Net;
@@ -288,13 +288,13 @@ public class OldQuotesControllerTests : IClassFixture<WebApplicationFactory<Prog
 
 First, turn your attention to the `GetQuotes_ReturnsOK` test case. Very simple as tests go, but there are a few interesting things taking place here.
 
-The test case itself is indeed simple. All it does is create an HTTP client, use it to send a GET request to the endpoint in our API that we want to test (using the client's `GetAsync` method), and finally validate that the response is a `200 OK`. How it does these things is the interesting part.
+The test case itself is indeed simple. All it does is create an HTTP client, use it to send a GET request to the endpoint that we want to test (using the client's `GetAsync` method), and finally validate that the response is a `200 OK`. How it does these things is the interesting part.
 
 The HTTP client is created using the `CreateHttpClient` method. This method leverages `_factory`, a `WebApplicationFactory<Program>` instance that's injected by the framework into our test class. Here, the [generic type parameter](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-type-parameters) `Program` is referring to the "Program" class from the Web API project. The one we defined in the `Program.cs` file. Notice also how our test class implements the `IClassFixture<WebApplicationFactory<Program>>` interface. That's what signals to the framework that a `WebApplicationFactory<Program>` instance needs to be passed/injected via the constructor. This is the way that the `Microsoft.AspNetCore.Mvc.Testing` package allows us to express that "this test class contains tests for this web application".
 
 > Full details in [the official docs](https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-8.0).
 
-Notice also how, when creating the HTTP client, a `VehicleQuotesContext` instance is set up as a singleton service. This is key. This DB context is obtained thanks to our `DatabaseFixture`. That means that it connects to the test database. We configured it to do so. By setting it up as a service like this, we make sure that the Web API application uses that instance whenever it interacts with the database. That way it uses the test database also. In addition to that, since this is the same instance that we will use within our tests, that means that both the tests suite and the application (when running within the context of the tests) will share the same database.
+Notice also how, when creating the HTTP client, a `VehicleQuotesContext` instance is set up as a singleton service. This is key. This DB context is obtained thanks to our `DatabaseFixture`. That means that it connects to the test database. We configured it to do so. By setting it up as a service like this, we make sure that the Web API application uses that instance whenever it interacts with the database. And using that instance, means that it will use the test database. In addition to that, since this is the same instance that we will use within our tests, that means that both the tests suite and the application (when running within the context of the tests) will share the same database.
 
 Long story short: That way of constructing the HTTP client and injecting our own DB context into the running application is the secret sauce that allows our tests to utilize the test instance of the database.
 
@@ -376,11 +376,11 @@ private async Task<Quote> CreateNewQuote(string year, string make, string model)
 
 This method introduces a few more interesting features:
 
-1. It runs within a database transaction. Ensuring that any data changes are removed once the test is done.
+1. It runs within a database transaction. Ensuring that any data changes are rolled back once the test is done.
 2. It uses the singleton DB context to interact with the database. Inserting new records before executing the application under test.
 3. It parses a JSON response body into a .NET object.
 
-In detail, here's what it does: It uses our `DatabaseFixture`'s `WithTransaction` method to run within a database transaction. The test's strategy is simple: it first inserts new records into the database, leveraging the `CreateNewQuote` helper method. Then it sends a request to the Web API's `GET /api/Quotes` endpoint. Finally, in the assertion section, it validates that the response came back with the correct HTTP status code. Then it parses the JSON response body into an object, and then inspects that object to make sure that it has the correct data in it. That is, that it contains the database records that were inserted at the beginning of the test case.
+In detail, here's what it does: It uses our `DatabaseFixture`'s `WithTransaction` method to run within a database transaction. The test's strategy is simple: it first inserts new records into the database, leveraging the `CreateNewQuote` helper method. Then it sends a request to the Web API's `GET /api/Quotes` endpoint. Finally, in the assertion section, it validates that the response came back with the correct HTTP status code. Then it parses the JSON response body into an object, and inspects that object to make sure that it has the correct data in it. That is, that it contains the database records that were inserted at the beginning of the test case.
 
 ### A test that makes a POST request
 
@@ -433,7 +433,9 @@ public async Task PostQuote_CreatesANewQuoteRecord()
 }
 ```
 
-The only new concept that this test introduces is the use of the HTTP client's `PostAsJsonAsync` method to send POST requests. Notice how we can send any payload we want using an [anonymous object](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/anonymous-types). In the assertion phase, the test queries the database to check if the expected record was inserted. All of this is made possible by the singleton `VehicleQuotesContext` instance. Both the tests and the application are talking to the test database. And thanks to the transactions, each test cleans up after it's done so that the next test can run with a clean slate.
+The only new concept that this test introduces is the use of the HTTP client's `PostAsJsonAsync` method to send POST requests. Notice how we can send any payload we want using an [anonymous object](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/anonymous-types). In the assertion phase, the test queries the database to check if the expected record was inserted.
+
+All of this is made possible by the singleton `VehicleQuotesContext` instance. Both test code and application code are talking to the test database. And thanks to the transactions, each test cleans up after it's done so that the next test can run with a clean slate.
 
 ### A test that makes many requests
 
