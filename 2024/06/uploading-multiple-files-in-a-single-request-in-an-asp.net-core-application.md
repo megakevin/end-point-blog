@@ -325,7 +325,7 @@ This is how we design our form so that when submitted, ASP.NET knows that it has
 
 At this point, the feature should work. If you run the app with `dotnet run`, and navigate to the page we've been building at `http://localhost:{YOUR_PORT}/Quotes/Edit/{QUOTE_ID}`, you should see something like this:
 
-![Quote edit page with three file input elements](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/file-uploads-v1.png)
+![Quote edit page with three file input elements](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/file-uploads-v1.png)
 
 Pick three image files, hit the blue "Save" button and the files should be uploaded into the `wwwroot/uploads` diretory...
 
@@ -457,15 +457,15 @@ So the overall strategy is something like this: At page load, we start with an e
 
 So the page starts looking like this:
 
-![The empty file selection form](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/file-uploads-v2-0.png)
+![The empty file selection form](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/file-uploads-v2-0.png)
 
 If we pick a file, the page turns into this:
 
-![The file selection form with one file selected](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/file-uploads-v2-1.png)
+![The file selection form with one file selected](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/file-uploads-v2-1.png)
 
 Pick another, and now it looks like this:
 
-![The file selection form with two files selected](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/file-uploads-v2-3.png)
+![The file selection form with two files selected](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/file-uploads-v2-3.png)
 
 And so on.
 
@@ -668,7 +668,7 @@ We probably also want to add a validation summary in the View so that an error m
 
 Attempting to upload invalid files produces something like this:
 
-![A validation error](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/validation-error.png)
+![A validation error](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/validation-error.png)
 
 There are more complex validations that can be done. Check out [ASP.NET's official docs](https://learn.microsoft.com/en-us/aspnet/core/mvc/models/file-uploads?view=aspnetcore-8.0#validation) to learn more.
 
@@ -768,7 +768,7 @@ Finally, in the View, we update the HTML template to iterate over the loaded quo
 
 The page should now look something like this:
 
-![The existing images being displayed on screen](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/image-display.png)
+![The existing images being displayed on screen](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/image-display.png)
 
 # Deleting the images
 
@@ -845,6 +845,6 @@ private void DeleteImageFile(string fileName)
 
 With that, each image rendered in the page should now have a working "Delete" button that looks like this:
 
-![The image delete button](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/image-delete.png)
+![The image delete button](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/image-delete.png)
 
 Alright! Now we have a fully functional image handling page where we can view, add and remove images associated with a particular entity in our system. The neat part is that users can select as many files as they want and upload them all at the same time within a single form submission. We did all this with Razor Pages, using framework features, and a little bit of JavaScript.
