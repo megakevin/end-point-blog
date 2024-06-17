@@ -8,7 +8,7 @@ tags:
 - csharp
 ---
 
-We recently worked on a project where we had to develop a web application for maintaining an e-commerce site's product catalog. Unsurprisingly, one of the features involved the management of product images. Specifically, we wanted to create a page where all the images of a given product were displayed and also new ones could be uploaded.
+We recently worked on a project where we had to develop a web application for maintaining an e-commerce site's product catalog. Unsurprisingly, one of the features involved the management of product images. Specifically, we wanted to create a page where all the images of a given product were displayed and new ones could be uploaded.
 
 In addition to that, this wasn't a SPA. We weren't using a [JavaScript framework](https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks) and instead were relying on regular server-rendered views with [ASP.NET Razor Pages](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/?view=aspnetcore-8.0&tabs=visual-studio). Even so, we wanted to create a user experience with a good balance of usability and development complexity. So, we decided to create the capability of uploading several image files at once within a single request. That is, within a single HTML form submission.
 
@@ -18,14 +18,14 @@ To demonstrate the approach, I'm going to use a [sample ASP.NET Core solution](h
 
 Let's get started.
 
-> Each section is accompanied by a given commit that includes all the changes discussed within them. So feel free to check those as well to see step by step how the finished product takes shape.
+> Each section is accompanied by a given commit that includes all the changes discussed within them. So feel free to check those as well to see how the finished product takes shape step by step.
 
 # Where to store the images
 
 > Commit: [d65fd8](https://github.com/megakevin/end-point-blog-dotnet-8-demo/commit/d65fd8fa7f1b836c1245fb657aad5d11e667164e).
 
 
-The first decision that we have to make is where to store the image files. There are various options afforded to us by ASP.NET and our underlying [PostgreSQL](https://www.postgresql.org/) database, but here's how we're going to do it: We're going to store records in the database that represent the images associated with each quote. These records won't actually contain image binary data however, only references to them, in the form of their file names. The files themselves will be stored in ASP.NET's [`wwwroot`](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/static-files?view=aspnetcore-8.0) directory. That way they can be easily served to browsers, as everything inside that directory is accessible to clients.
+The first decision that we have to make is where to store the image files. There are various options afforded to us by ASP.NET and our underlying [PostgreSQL](https://www.postgresql.org/) database, but here's how we're going to do it: We're going to store records in the database that represent the images associated with each quote. These records won't actually contain image binary data however, only references to them, in the form of their file names. The files themselves will be stored in the project's [`wwwroot`](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/static-files?view=aspnetcore-8.0) directory. That way they can be easily served to browsers, as everything inside that directory is accessible to clients.
 
 Starting off with a fresh new ASP.NET Core Web App (with Razor Pages) project, here's how that's done.
 
@@ -216,7 +216,7 @@ public class EditModel : PageModel
 }
 ```
 
-Next we need to create the View. The job of this View is to define an HTML form with as many `<input type="file">` elements as we need to upload many files. The number of `<input>` elements cannot be static however. We want to allow users to upload as many images as they want. So, we also need some of JavaScript to dynamically add new `<input>` elements as the user picks more and more files.
+Next we need to create the View. The job of this View is to define an HTML form with as many `<input type="file">` elements as we need to upload many files. The number of `<input>` elements cannot be static however. We want to allow users to upload as many images as they want. So, we also need some JavaScript to dynamically add new `<input>` elements as the user picks more and more files.
 
 Before we make it dynamic though, let's go through the exercise of building it with a static number of `<input>` elements as a first step. I think that'll help understand the process better.
 
@@ -351,7 +351,7 @@ vehicle_quotes=# select * from quote_images;
 > Commit: [5aaff6](https://github.com/megakevin/end-point-blog-dotnet-8-demo/commit/5aaff60c0a44173f97220ac0f287338ad6783bb6).
 
 
-Now that we've seen the general approach and key details of working with the framework to upload multiple files, it's more clear what we need to do to support any number of files. Like I said, what we need is "some of JavaScript to dynamically add new `<input>` elements as the user picks more and more files".
+Now that we've seen the general approach and key details of working with the framework to upload multiple files, it's more clear what we need to do to support any number of files. Like I said, what we need is "some JavaScript to dynamically add new `<input>` elements as the user picks more and more files".
 
 Let's start by removing the three file input elements (that is, the whole `<div id="quote-images-container">` element) and replacing them with this:
 
@@ -697,6 +697,7 @@ public class EditModel : PageModel
 
     // public IActionResult OnGet(int id) => Page(); <- This gets removed.
 
+    // This is our new GET request handler.
     public async Task<IActionResult> OnGetAsync(int id)
     {
         var quote = await FindQuote(id);
@@ -846,4 +847,4 @@ With that, each image rendered in the page should now have a working "Delete" bu
 
 ![The image delete button](uploading-multiple-files-in-a-single-request-in-an-asp.net-application/image-delete.png)
 
-Alright! Now we have a fully functional image handling page where we can view, add and remove images associated with a particular entity in our system. The neat part is that users can select as many files as they want and upload them all at the same time within a single form submission. And we did it with Razor Pages, using framework features, and a little bit of JavaScript.
+Alright! Now we have a fully functional image handling page where we can view, add and remove images associated with a particular entity in our system. The neat part is that users can select as many files as they want and upload them all at the same time within a single form submission. We did all this with Razor Pages, using framework features, and a little bit of JavaScript.
