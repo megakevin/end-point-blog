@@ -1,7 +1,7 @@
 ---
 author: "Kevin Campusano"
 title: "Uploading multiple files in a single request in an ASP.NET Core application"
-date: 2024-06-08
+date: 2024-06-17
 tags:
 - dotnet
 - aspdotnet
