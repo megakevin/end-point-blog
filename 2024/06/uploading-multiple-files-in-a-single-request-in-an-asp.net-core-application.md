@@ -216,9 +216,15 @@ public class EditModel : PageModel
 }
 ```
 
-Next we need to create the View. The job of this View is to define an HTML form with as many `<input type="file">` elements as we need to upload many files. The number of `<input>` elements cannot be static however. We want to allow users to upload as many images as they want. So, we also need some JavaScript to dynamically add new `<input>` elements as the user picks more and more files.
+Next we need to create the View. The job of this View is to define an HTML form that supports uploading many files. We have two options for this. The first option involves creating a form with a single file input element that uses the [`multiple` attribute](https://www.w3schools.com/tags/att_input_multiple.asp). That will allow the user to pick many files at the same time using their operating system's file picker dialog box. Something like this:
 
-Before we make it dynamic though, let's go through the exercise of building it with a static number of `<input>` elements as a first step. I think that'll help understand the process better.
+![The Windows file picker](uploading-multiple-files-in-a-single-request-in-an-asp.net-core-application/windows-file-picker.png)
+
+Option number two on the other hand, involves defining a form with multiple file input elements with each accepting one file. The number of `<input>` elements cannot be static however. We want to allow users to upload as many images as they want. So, we'd also need some JavaScript to dynamically add new `<input>` elements as the user picks more and more files.
+
+Both options are valid, and deciding on one over the other will depend on the user experience you're interested in creating and the amount of effort you can devote to it. For us, we went with option #2: A dynamic set of individual file input elements.
+
+Before making it fully dynamic though, let's go through the exercise of building it with a static number of `<input>` elements as a first step. I think that'll help understand the process better.
 
 So here's the `cshtml` file with three `<input type="file">` elements:
 
