@@ -1,5 +1,5 @@
 ---
-author: "Kevin Campusano"
+author: "Kevin Campusano & Juan Pablo Ventoso"
 title: "Using Docker Compose to Deploy a Multi-Application .NET System"
 date: 2024-06-23
 tags:
@@ -855,4 +855,96 @@ The most interesting part is the `healthcheck` setting in the `db` service which
 
 Another common pattern for serving web applications is to use [NGINX](https://nginx.org/en/) as a [reverse proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) that funnels HTTP traffic coming from the internet into the application. As you may have noticed, we haven't talked about HTTPS so far. This aspect is something that can be elegantly handled by NGINX as well. In this last section we see how we can set up NGINX to expose our apps to the world.
 
-<!-- TODO -->
+First, we need to create some custom items in the default NGINX configuration file. Its default location will depend on the OS version and flavor you installed NGINX on, but for [Rocky Linux](https://rockylinux.org/) 9, it usually lives in `/etc/nginx/nginx.conf`. First, we need to declare our upstream servers that will point to the ports where the web API and admin portals are listening:
+
+```
+upstream admin_portal {
+    server localhost:8001;
+}
+
+upstream web_api {
+    server localhost:8002;
+}
+```
+
+Then, we will add a server that listens in the standard port 80 and proxies the `/admin` and `/api` URLs to the `admin_portal` and `web_api` upstream servers respectively:
+
+```
+server {
+    listen 80;
+    server_name vehiclequotes.com;
+
+    location /admin {
+        proxy_pass http://admin_portal;
+        proxy_http_version 1.1;
+        proxy_set_header Connection keep-alive;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /api {
+        proxy_pass http://web_api;
+        proxy_http_version 1.1;
+        proxy_set_header Connection keep-alive;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Those are the basic settings needed to serve our applications in a single domain through different locations. This allows having a live frontend application that will eventually consume our API endpoints that lives in the same server and domain, avoiding possible Cross-Origin Resource Sharing (CORS) issues when establishing the workflow between the different web applications.
+
+If we also have an SSL certificate that we want to use to securely serve our apps, we can use a free service such as [Let’s Encrypt](https://letsencrypt.org/) to create it. Once we’re in possession of the certificate files and placed them on the server, we need to perform a few extra tweaks to our `nginx.conf` file.
+
+* First, let’s make our server listen on port 443 (HTTPS), and point to our `.cer` and `.key` files in the updated entry:
+
+```
+server {
+    listen 443 ssl;
+    server_name vehiclequotes.com;
+    ssl_certificate /etc/certs/live/vehiclequotes.com/fullchain.cer;
+    ssl_certificate_key /etc/certs/live/vehiclequotes.com/vehiclequotes.com.key;
+
+    location /admin {
+        proxy_pass http://admin_portal;
+        proxy_http_version 1.1;
+        proxy_set_header Connection keep-alive;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /api {
+        proxy_pass http://web_api;
+        proxy_http_version 1.1;
+        proxy_set_header Connection keep-alive;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+* Second, let’s add a new server for port 80 (non-HTTPS) that will redirect permanently to our new secure location:
+
+```
+server {
+    listen 80;
+    server_name vehiclequotes.com;
+    return 301 https://$server_name$request_uri;
+}
+```
+
+* Finally, let's restart the NGINX service to apply our changes. The command that restarts the service will vary depending on the OS we're running on the server. For [Rocky Linux](https://rockylinux.org/) 9, we can do that by running the command `sudo systemctl restart nginx`.
+
+You can find the resulting [`nginx.conf`](https://github.com/megakevin/end-point-blog-dotnet-docker-deploy/blob/main/nginx.conf) file in the [project's repo](https://github.com/megakevin/end-point-blog-dotnet-docker-deploy/) in GitHub.
+
+# That's all for now
+
+And that's it! In this article, we've seen how we can approach deploying a .NET app into production using Docker Compose.
+
+We saw how to organize the code and configuration files using git sub-modules. We addressed a few important edge cases and gotchas like properly configuring Data Protection keys, having a container for performing maintenance tasks, ensuring certain files persist across restarts, and bringing up services in a certain order via `depends_on` settings.
+
+We even saw how to allow our web applications to be accessible to the outside world with NGINX through a set of reverse proxying rules, and as a bonus, to be securely served with SSL.
