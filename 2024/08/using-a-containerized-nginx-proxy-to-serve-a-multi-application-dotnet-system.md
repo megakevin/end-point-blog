@@ -1,7 +1,7 @@
 ---
 author: "Kevin Campusano"
 title: "Using a Containerized Nginx Proxy to Serve a Multi-Application .NET System"
-date: 2024-08-29
+date: 2024-08-31
 tags:
 - dotnet
 - aspdotnet
@@ -10,17 +10,17 @@ tags:
 - nginx
 ---
 
-We recently [blogged](https://www.endpointdev.com/blog/2024/07/using-docker-compose-to-deploy-a-multi-application-dotnet-system/) about how we deployed a system with multiple .NET applications using [Docker containers](https://www.docker.com/resources/what-container/). In order to make them accessible over the internet, we created a [reverse proxy](https://en.wikipedia.org/wiki/Reverse_proxy) using [Nginx](https://nginx.org/en/).
+We recently [blogged](https://www.endpointdev.com/blog/2024/07/using-docker-compose-to-deploy-a-multi-application-dotnet-system/) about how we deployed a system made of multiple .NET applications using [Docker containers](https://www.docker.com/resources/what-container/). In order to make them accessible over the internet, we created a [reverse proxy](https://en.wikipedia.org/wiki/Reverse_proxy) using [Nginx](https://nginx.org/en/).
 
 In that case, we installed and configured the Nginx instance directly in the server, as opposed to the rest of the applications, which ran within containers. That approach did and still does work well for us.
 
 In this article, we're going to explore an alternative strategy. One where we push the containerization aspect further and deploy and run the Nginx instance itself in a Docker container.
 
-### Reintroducing the demo project
+## Reintroducing the demo project
 
-Like I said, our system has multiple runtime components, each one of them running in their own container. We have two ASP.NET Core web applications: an Admin Portal and a Web API. They live in [this Git repository](https://github.com/megakevin/end-point-blog-dotnet-8-demo). And we also have a Postgres database, which the apps interact with.
+Like I said, our system has multiple runtime components, each one of them running in their own container. We have two ASP.NET Core web applications: an Admin Portal and a Web API. They live in [this Git repository](https://github.com/megakevin/end-point-blog-dotnet-8-demo). And we also have a [Postgres](https://www.postgresql.org/) database, which the apps interact with.
 
-We also have [another repository](https://github.com/megakevin/end-point-blog-dotnet-docker-deploy) where the deployment-related files are stored. Among others, there's the expected `compose.yaml` and `Dockerfile`s that describe the entire infrastructure.
+We also have [another repository](https://github.com/megakevin/end-point-blog-dotnet-docker-deploy) where the deployment-related files are stored. Among others, there are the expected `compose.yaml` and `Dockerfile`s that describe the entire infrastructure.
 
 Throughout this post we will update those deployment configuration files to add an Nginx reverse proxy.
 
@@ -39,14 +39,14 @@ services:
 
   proxy:
     # The proxy container will be based on this Dockerfile, which we'll define
-    # below.
+    # soon.
     build:
       context: .
       dockerfile: Dockerfile.Proxy
 
-    # Here we expose the nginx proxy via port 8888. This can be anything. In
+    # Here we expose the Nginx proxy via port 8888. This can be anything. In
     # fact, if you want to do multiple parallel deployments on the same machine,
-    # that is, with many nginx instances running at the same time, you can
+    # that is, with many Nginx instances running at the same time, you can
     # adjust this setting appropriately to prevent port conflicts. Making sure
     # that each instance has its own port.
     ports:
@@ -71,7 +71,7 @@ As you saw, the `proxy` configuration in `compose.yaml` leverages an external `D
 # Dockerfile.Proxy
 
 # We can pick the version and flavor that we like. In our case here, this is an
-# image based on the latest release of Nginx, and the latest release or Debian.
+# image based on the latest release of Nginx, and the latest release of Debian.
 FROM nginx:1.27.1-bookworm
 
 # Unsurprisingly, we have a custom configuration that we want the proxy to use.
@@ -82,9 +82,9 @@ COPY proxy/nginx.conf /etc/nginx/nginx.conf
 
 ## Configuring the proxy
 
-Now we have to configure the Nginx proxy to route requests to both our web applications. Here's an nginx.conf that does just that:
+Now we have to configure the Nginx proxy to route requests to both our web applications. Here's an `nginx.conf` that does just that:
 
-```conf
+```sh
 # proxy/nginx.conf
 
 user  nginx;
@@ -113,10 +113,10 @@ http {
     keepalive_timeout  65;
 
     # We have to comment out or remove this line to make sure the default
-    # configuration is not applied.
+    # configuration that comes in the official image is not applied.
     # include /etc/nginx/conf.d/*.conf;
 
-    # Our customizations start here/
+    # Our customizations start here:
     server {
         # With this listen directive, we configure our proxy to expect
         # connections coming from the default HTTP port: 80.
@@ -143,9 +143,9 @@ http {
 }
 ```
 
-What I've done here is take the default Nginx configuration file that comes out of the box, and replace the `include /etc/nginx/conf.d/*.conf;` line with my own `server` block directive.
+What I've done here is take the default Nginx configuration file that comes right out of the box, and replace the `include /etc/nginx/conf.d/*.conf;` line with my own `server` block directive.
 
-> As explained in [the official image's Dockerhub page](https://hub.docker.com/_/nginx), a quick way of obtaining a copy of this file is using this command: `docker run --rm --entrypoint=cat nginx /etc/nginx/nginx.conf > /host/path/nginx.conf`.
+> As explained in [the official image's Dockerhub page](https://hub.docker.com/_/nginx), a quick way of obtaining a copy of this default file is using this command: `docker run --rm --entrypoint=cat nginx /etc/nginx/nginx.conf > /host/path/nginx.conf`.
 
 The most interesting parts are the `proxy_pass` directives that take care of redirecting traffic to the apps. Notice how they refer to the Admin Portal using `http://admin-portal:8080` and to the Web API by `http://web-api:8080`. These are the internal naming of these components within the containers' virtual network, which gets created automatically by Docker Compose.
 
@@ -159,7 +159,7 @@ It also uses `proxy_set_header` directives to set `Host` and `Connection` header
 
 ## Configuring the Path Base in ASP.NET Core apps
 
-There's an additional step that we have to take to make all this work. We have configured our Nginx proxy to serve both applications under the same "server", and rely on different in URL paths (i.e. `/admin` vs `/api`) to determine which app will receive each request. This means that we have to perform further configuration in the apps so that routing is done properly. Thankfully, all it takes is a one-liner in each of the app's `Program.cs` file, after the usual `var app = builder.Build();` line.
+There's an additional step that we have to take to make all this work. We have configured our Nginx proxy to serve both applications under the same "server", and rely on different in URL paths (i.e. `/admin` vs `/api`) to determine which app will receive which request. This means that we have to perform further configuration in the apps so that routing is done properly. Thankfully, all it takes is a one-liner in each of the app's `Program.cs` file, after the usual `var app = builder.Build();` line, we do the following:
 
 For the Admin Portal, we add this:
 
@@ -173,7 +173,7 @@ app.UsePathBase("/admin");
 // ...
 ```
 
-And the Web API:
+And for the Web API:
 
 ```csharp
 // source/VehicleQuotes.WebApi/Program.cs
