@@ -12,6 +12,16 @@ Today we're pleased to announce a new open source project: End Point Commerce. A
 
 You can fork it today on [GitHub](https://bits.endpointdev.com/end-point-open-source/end-point-commerce).
 
+There are running demos here: [REST API](https://bits.endpointdev.com/end-point-open-source/end-point-commerce), [admin portal](https://bits.endpointdev.com/end-point-open-source/end-point-commerce), [sample store frontend](https://bits.endpointdev.com/end-point-open-source/end-point-commerce).
+
+Are you interested in using it for your E-Commerce site? Feel free to [contact us](https://www.endpointdev.com/contact/) and we can work together to help you deploy, customize and maintain it.
+
+![REST API](announcing-end-point-commerce-our-new-e-commerce-open-source-project/epc_swagger.png)
+
+![Admin Portal](announcing-end-point-commerce-our-new-e-commerce-open-source-project/epc_admin_portal.png)
+
+![Sample Store Frontend](announcing-end-point-commerce-our-new-e-commerce-open-source-project/epc_web_store.png)
+
 ## Key Features
 
 - Built with [ASP.NET](https://dotnet.microsoft.com/en-us/apps/aspnet), [PostgreSQL](https://www.postgresql.org/) and [Authorize.NET](https://www.authorize.net/)
@@ -41,3 +51,4 @@ This project is not meant for non-technical folks. There is no installation wiza
 If you want to set up a simple online store, or develop a highly customized one from scratch, think of this as a way of skipping the first few steps of building the foundational architecture and basic functionality.
 
 Please check it out! And do whatever you want with it!
+
