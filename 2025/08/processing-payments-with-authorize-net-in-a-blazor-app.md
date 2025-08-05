@@ -493,7 +493,7 @@ Let's start implementing the initialization side of things by defining our `Paym
 </section>
 ```
 
-The HTML template itself is very unremarkable. It's just a form for capturing credit card number, expiration date, and CVV; along with a button to submit the form. What's intersting about this code are the `@inject` statements at the top. Especially the `@inject IJSRuntime JS` one. `IJSRuntime` is the object that allows Blazor components to invoke JavaScript logic in the browser. We will see how the component uses it next.
+The HTML template itself is very unremarkable. It's just a form for capturing credit card number, expiration date, and CVV; along with a button to submit the form. What's interesting about this code are the `@inject` statements at the top. Especially the `@inject IJSRuntime JS` one. `IJSRuntime` is the object that allows Blazor components to invoke JavaScript logic in the browser. We will see how the component uses it next.
 
 Here's the logic of the component:
 
@@ -765,6 +765,6 @@ function clearErrors() {
 }
 ```
 
-This code wires up logic so that when the form submit button is clicked: the captured credit card information is sent to Authorize.NET; any errors from Authorize.NET are handled and displayed to the user; and, when sucessful, the returned payment token is sent back to the Blazor component, so that it can send it to the backend API. Most of this logic is very similar to what you would find in the official documentation from Authorize.NET, except for the part that interacts with our Blazor component.
+This code wires up logic so that when the form submit button is clicked: the captured credit card information is sent to Authorize.NET; any errors from Authorize.NET are handled and displayed to the user; and, when successful, the returned payment token is sent back to the Blazor component, so that it can send it to the backend API. Most of this logic is very similar to what you would find in the official documentation from Authorize.NET, except for the part that interacts with our Blazor component.
 
 And that's all for now! In this article we've seen how to build a Blazor WebAssembly Standalone application, which interfaces with Authorize.NET through their Accept.js frontend library, to tokenize a credit card and submit payment transactions by calling a backend API.
