@@ -34,7 +34,7 @@ dotnet add package AuthorizeNet.Core --version 8.0.1
 
 ## Interacting with Authorize.NET
 
-Now we have to create a class to submit payment transactions to Authorize.NET. You can arrive at something like this by reading the Authorize.NET documentation. But Here's what we will go with:
+Now we have to create a class to submit payment transactions to Authorize.NET. You can arrive at something like this by reading the Authorize.NET documentation. But here's what we will go with:
 
 First a class to set up the connection and serve as entry point:
 
@@ -479,8 +479,6 @@ Let's start implementing the initialization side of things by defining our `Paym
             </div>
         </div>
 
-        <ul id="AuthNetErrors" class="validation-errors"></ul>
-
         <div class="d-flex justify-content-end">
             <button
                 id="SubmitOrderButton" type="button"
@@ -489,6 +487,22 @@ Let's start implementing the initialization side of things by defining our `Paym
                 Place Order
             </button>
         </div>
+
+        <ul id="AuthNetErrors" class="validation-errors"></ul>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success" role="alert">
+                @successMessage
+            </div>
+        }
     </div>
 </section>
 ```
@@ -508,6 +522,9 @@ Here's the logic of the component:
     // This represents a JavaScript module. We use it to store a reference to Payment.razor.js and invoke functions
     // defined in it.
     private IJSObjectReference? module;
+
+    private string? errorMessage;
+    private string? successMessage;
 
     // This method initializes the reference to this Blazor component, loads the Payment.razor.js file, and calls the
     // initializeAuthNetAcceptJs function defined in it.
@@ -620,10 +637,16 @@ Now the stage is set to allow users to enter their credit card information and s
 ```csharp
 // BlazorAuthorizeNet.Frontend/Pages/Payment.razor
 
+record PaymentResponseSuccess(string MessageDescription);
+record PaymentResponseError(string ErrorMessage);
+
 // The JSInvokable attribute allows this method to be invoked from JavaScript via the passed DotNetObjectReference.
 [JSInvokable]
 public async void SubmitOrder(string paymentMethodNonceValue, string paymentMethodNonceDescriptor)
 {
+    successMessage = null;
+    errorMessage = null;
+
     // Calls the backend Web API's endpoint and sends it the nonce value and descriptor. That is, the tokenized
     // representation of the credit card that we obtained from Accept.js.
     using var response = await HttpClient.PostAsJsonAsync(
@@ -634,6 +657,22 @@ public async void SubmitOrder(string paymentMethodNonceValue, string paymentMeth
             PaymentMethodNonceDescriptor = paymentMethodNonceDescriptor
         }
     );
+
+    // Handle the response by partsing the contents and displaying messages in the page accordingly.
+    var isSuccess = response.IsSuccessStatusCode;
+
+    if (isSuccess)
+    {
+        var success = await response.Content.ReadFromJsonAsync<PaymentResponseSuccess>();
+        successMessage = success?.MessageDescription;
+    }
+    else
+    {
+        var error = await response.Content.ReadFromJsonAsync<PaymentResponseError>();
+        errorMessage = error?.ErrorMessage;
+    }
+
+    StateHasChanged();
 }
 ```
 
@@ -662,7 +701,7 @@ function doSubmit(authNetLoginId, authNetClientKey, dotNet) {
         // ...when successful, use the DotNetObjectReference given by Blazor to call the SubmitOrder on the
         // Payment.razor component. Sending it the tokenized credit card.
         response => {
-            dotNet.invokeMethodAsync(
+            dotNet.invokeMethod(
                 "SubmitOrder",
                 response.opaqueData.dataValue,
                 response.opaqueData.dataDescriptor
@@ -710,10 +749,11 @@ function handleAuthNetResponse(response, onDone) {
         console.log("Error from Authorize.Net: ", response);
 
         displayErrors(response.messages.message);
-        enableSubmitButton();
     } else {
         onDone(response);
     }
+
+    enableSubmitButton();
 }
 
 // This function populates the "AuthNetErrors" <ul> with items containing descriptions of the errors returned by
