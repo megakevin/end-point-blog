@@ -18,6 +18,8 @@ What we ended up with was a nice approach for handling frontend asset bundling u
 
 > You can find a code base that uses the setup we'll be discussing here on [Github](https://github.com/megakevin/razor-start-bootstrap-admin). It's an empty ASP.NET Core Razor Pages project that implements StartBootrap's admin template. Feel free to review it alongside this article and/or use it for your own projects.
 
+> We've also [uploaded to NuGet](https://www.nuget.org/packages/EndPointDev.RazorEsbuildProjectTemplate) a template for an empty ASP.NET Core Razor Pages web app that has implemented the `esbuild`-based frontend asset bundling.
+
 ## Installing pnpm and the necessary packages
 
 First of all we need to have the [.NET framework installed](https://dotnet.microsoft.com/en-us/download). We also need to [install Node.js](https://nodejs.org/en/download) and [the pnpm package manager](https://pnpm.io/installation).
