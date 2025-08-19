@@ -1,7 +1,7 @@
 ---
 author: "Kevin Campusano"
 title: "Announcing End Point Ecommerce, our new open source project."
-date: 2025-08-08
+date: 2025-08-19
 tags:
 - dotnet
 - ecommerce
@@ -10,7 +10,7 @@ tags:
 
 Today we're pleased to announce a new open source project: End Point Ecommerce. A minimalist E-Commerce system that's quick to set up and easy to understand. Meant for developers to own, adapt, customize and extend.
 
-You can fork it today on [GitHub](https://github.com/EndPointCorp/end-point-ecommerce).
+You can learn more about it on [our website](https://ecommerce.endpointdev.com/). You can also fork it today on [GitHub](https://github.com/EndPointCorp/end-point-ecommerce).
 
 There are running demos here: [REST API](https://demo.ecommerce.endpointdev.com/swagger), [Admin Portal](https://admin.demo.ecommerce.endpointdev.com), [Web Store](https://demo.ecommerce.endpointdev.com).
 
@@ -29,7 +29,7 @@ Are you interested in using it for your E-Commerce site? Feel free to [contact u
 - Code base designed to follow [Clean Architecture](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures#clean-architecture) and [Domain Driven Design](https://learn.microsoft.com/en-us/archive/msdn-magazine/2009/february/best-practice-an-introduction-to-domain-driven-design) concepts, without being dogmatic about it. Simplicity trumps all.
 - Good test coverage with [xUnit](https://xunit.net/).
 - Includes a backend admin portal for managing the store, a REST API for building user-facing store frontends, and a simple web frontend.
-- Limited functionality. Implements the bare minimum of E-Commerce user cases.
+- Limited functionality. Implements the bare minimum of E-Commerce use cases.
 - Product catalog, shopping cart, order submission, email delivery.
 
 ## How we got here
