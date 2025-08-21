@@ -33,7 +33,7 @@ $ pnpm --version
 10.14.0
 ```
 
-Once we have those, we need a Razor Pages project to apply the changes to. For our purposes here, I'm going to assume we're staring off with a fresh project, created using something like `dotnet new webapp`.
+Once we have those, we need a Razor Pages project to apply the changes to. For our purposes here, I'm going to assume we're starting off with a fresh project, created using something like `dotnet new webapp`.
 
 With that out of the way, we can create a `package.json` file in the root of our project:
 
@@ -243,7 +243,7 @@ jsFiles.forEach(async file => {
 
 > One important thing to note here is that with `esbuild`, we can safely use JavaScript modules, and `import` statements for both JavaScript and SCSS. This means that our frontend logic and styling rules can be broken up into any number of files, forming a tree of dependencies through `import` statements. We need only to specify the root files, or entry points, and `esbuild` takes care of building a complete and self-contained bundle. Not really a revolutionary idea in the grand scheme of things, but not always a given when working with JavaScript on the browser.
 
-With this, we can trigger the bundling process this command: `node esbuild.config.mjs`. However, it'd be nice to have it better integrated with a typical .NET development flow. For that, we can add the following under `scripts` in `pacakge.json`:
+With this, we can trigger the bundling process this command: `node esbuild.config.mjs`. However, it'd be nice to have it better integrated with a typical .NET development flow. For that, we can add the following under `scripts` in `package.json`:
 
 ```json
 // ./package.json
@@ -331,7 +331,7 @@ In your projects, you'll encounter libraries with varying levels of support for 
 
 ## Importing libraries via HTML tags
 
-There are also some libraries that only work via traditional `<script>` tags. For these, you might want to have `esbuild` copy files directly from the `node_modules` directory into `wwwroot`, without any preprocesing. You could use something like this in your `esbuild.config.mjs` file for that:
+There are also some libraries that only work via traditional `<script>` tags. For these, you might want to have `esbuild` copy files directly from the `node_modules` directory into `wwwroot`, without any preprocessing. You could use something like this in your `esbuild.config.mjs` file for that:
 
 ```javascript
 // ./esbuild.config.mjs
