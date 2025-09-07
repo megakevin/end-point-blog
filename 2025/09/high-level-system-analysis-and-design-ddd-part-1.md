@@ -31,9 +31,9 @@ It is a well understood notion that before writting code, we need to understand 
 
 In simple terms, the domain of a business is what it does, its area of business activity. For example, Starbucks is in the business of making coffee. Ford is in the business of making automobiles. AMC is in the business of movie theathers.
 
-Of course, analyzing a business as a single integrated whole can be unmanageable. That's where subdomains come in. Subdomains are the different divisions within a domain. Starbuck's domain, for example is making coffee. But there are many smaller parts that make up that business and allow it to be successful. There's of course, the subdomain of coffe preparation. But there's also real estate management to find and secure good locations, there's marketing, there's human resources, etc. All these are the subdomains that make up the overall business of Starbucks.
+Of course, analyzing a business as a single integrated whole can be unmanageable. That's where subdomains come in. Subdomains are the different divisions within a domain. Starbuck's domain, for example is making coffee. But there are many smaller parts that make up that business and allow it to be successful. There's of course, the subdomain of coffee preparation. But there's also real estate management to find and secure good locations, there's inventory management and logistics, there's marketing, there's human resources, etc. All these are the subdomains that make up the overall business of Starbucks.
 
-<!-- TODO: talk about subdividing subdomains into more subdomains, and when to stop subdividng and how subdomains are sets of coherent use cases -->
+Depending on the business and on the project, these will vary greatly in granularity. And you can also sub-divide subdoimains further and discover new fine-grained subdomains nested within more coarse-grained subdomains. The sizes and nesting levels can be very different from business to business. One good rule of thumb to keep in mind is that generally, subdomains encapsulate a set of coherent, closely related use cases. That is, use cases that involve the same set of closely related actors, busines entities or data.
 
 And finally, we have domain experts. As the name suggests, these are the people within the organization who have intimate knowledge of the business, or certain aspects of it. They are the subject matter experts. Usually they are the ones who identify the problems and come up with requirements. Developers need to rely on domain experts to gain the necessary understanding to be able to produce useful software solutions.
 
@@ -51,7 +51,7 @@ Supporting subdomains on the other hand, do not provide any competitive advantag
 
 It's worth noting as well, that there may be subdomains where software solutions are not appropriate, even if they are higly complex core subdomains. They are still part of the business so it's worth identifying and considering for high level architectural design decissions. If anything, to know what parts of the business the planned software system should and should not focus on. You could have a restaurant, for example, who prides themselves in having the best desserts in the city. For their business, the recipe development activities constitute a core subdomain. This is dependant on the art and craftmanship of the chefs. Not an area in which software solutions could help a whole lot.
 
-It's also worth noting that, just as organizations' business strategies are dynamic, to too can be their subdomain distribution. Today's generic subdomain can be tomorrow's core subdomain, and so on. For example, imagine a big retail store chain that, up until now, managed inventory in an industry standard way. But is has grown so much that the standard way of doing things has become a bottleneck for them. So they design a new procedure for higly efficient inventory management, and that gives them an edge against competitors. Inventory management started as a generic subdoimain for them, but due to an ever evolving business strategy, it became a core subdomain.
+It's also worth noting that, just as organizations' business strategies are dynamic, to too can be their subdomain distribution. Today's generic subdomain can be tomorrow's core subdomain, and so on. For example, imagine a big retail store chain that, up until now, managed its inventory in an industry standard way. But is has grown so much that the standard way of doing things has become a bottleneck for them. So they design a new procedure for higly efficient inventory management, and that gives them an edge against competitors. Inventory management started as a generic subdoimain for them, but due to an ever evolving business strategy, it became a core subdomain.
 
 In summary, these are the main characteristics of the three types of subdomains:
 
@@ -65,9 +65,22 @@ Like I've already alluded to, armed with this knowledge, DDD practicioners are r
 
 When working on core subdomains, that's where we want to make the biggest investments. We deploy the most advanced engineering tools, patterns and practices. This is to make sure that the software is efficient and high quality, but also easy to maintain and evolve. This is necessary because core subdomains have to evolve rapidly by nature, if the business is to maintain competitive advantage. Software solutions that operate within the context of core subdomains have to be implemented by high skill and high trust teams. Either in-house, or via trusted development partners, working hand in hand with domain experts.
 
-Problems in generic subdomains, by nature of their business logic being very complex but also very common, are likely to have already been solved. For these types of problems, DDD recommends against implementing custom software, and instead buying and/or adopting tried and true, industry standard, off-the-shelf solutions. Their implementation and integration can be outsourced or handled by less specialized or skilled teams.
+Problems in generic subdomains, by nature of their business logic being very complex but also very common, are likely to have already been solved. For these types of problems, DDD recommends against implementing custom software, and instead buying and/or adopting tried and true, industry standard, off-the-shelf solutions. Their implementation and integration can be outsourced or handled by less specialized or skilled teams. The change management of these solutions is simple, given that they are not custom software, as they get delivered generally via patches and updates.
 
 For support subdomains, whose business logic is generally simple but uncommon, it is less likely that off-the-shelf solutions would be available. So software addressing problems in these subdomains will most likely have to be implemented as custom solutions. Due to their low complexity though, they can be easily outsourced, or handled by more junior team members. They can also be handled with [RAD](https://en.wikipedia.org/wiki/Rapid_application_development), low-to-no-code technologies, since a lot of the times they are little more than ETL and CRUD applications.
+
+Here's a table to summarizes the differences between the types of subdomains:
+
+| Type of subdomain     | Core               | Generic                 | Supporting         |
+|-----------------------|--------------------|-------------------------|--------------------|
+| Competitive advantage | Yes                | No                      | No                 |
+| Complexity            | High               | High                    | Low                |
+| Rate of change        | High               | Medium                  | Low                |
+| Implementation        | Custom development | Buy/adopt off-the-shelf | Custom development |
+| Team                  | In-house/partners  | Can outsource           | Can outsource      |
+| Team skill            | High               | Regular                 | Low                |
+| Investment            | High               | Medium                  | Low                |
+| Problems              | Interesting        | Solved                  | Simple             |
 
 # Chapter 2. Discovering Domain Knowledge
 # Chapter 3. Managing Domain Complexity
