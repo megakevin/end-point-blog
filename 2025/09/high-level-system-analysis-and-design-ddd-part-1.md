@@ -198,7 +198,22 @@ An open-host service applies to similar scenarios as an anticorruption layer. De
 
 ## Separate ways
 
+Sometimes, the right decision is to not integrate at all. I alluded to this outcome back when discussing the pitfalls of the shared kernel. Sometimes duplication, [in spite of how bad it smells](https://refactoring.guru/smells/duplicate-code), may be the most cost effective solution to a given situation. So the teams go their separate ways.
 
+This can happen when the involved teams cannot collaborate effectively for whatever reason. It could be due to geographical, timezone, or organizational issues.
 
+This can also be a good solution when the repeated logic belongs in a generic subdomain, and its easy to integrate. For example imagine a logging framework. Exposing that kind of functionality in a service for others to consume in most cases would be much more trouble than including some library or package.
+
+It may also be that the models being integrated are just so different that they are fundamentally incompatible. It may be cost-prohibitive for collaboration or customer-supplier patterns to be applied; and duplication again, is cheaper.
+
+Going separate ways can be dangerous when we're talking about core subdomains though. So we have to thread carefully in those scenarios. Remember that models that represent core subdomain should be implemented in the most effective and efficient ways, will little shortcuts and minimized technical debt.
+
+## The context map
+
+The context map can be a useful tool for high level design as it plots all the major bounded contexts (i.e. modules, components, subsystems) that we've designed and their interaction patterns.
+
+Of course, they can also offer valuable insight into organizational dynamics, as team composition and relationships with others are intrinsic parts of the discussion when talking about bounded contexts. For example, it can show teams that prefer to collaborate closely or at a healthy distance. I can also show problematic components, which are surrounded by anticorruption layers or have had their ties completely cut via a separate ways approach.
+
+As with any document, they run the risk of becoming stale as the system evolves. So it should be a team-wide responsibility to keep it up to date. Each team taking care of their own components and their integration points.
 
 <!-- TODO: draw a diagram that explains the prcess of going from a big domain into subdomains into ubiquitous language into bounded contexts into the interaction between them -->
