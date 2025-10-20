@@ -178,6 +178,9 @@ These contracts are necessary because each bounded context contains its own vers
 
 Domain-Driven Design offers various patterns that are useful for defining contracts between bounded contexts. The decision to use one pattern vs the other depends greatly on the nature of teams tackling the project. Depending on the teams relationship, we can put the patterns in one of three categories: cooperation, customer-supplier, and separate ways.
 
+![Collaboration spectrum](high-level-system-analysis-and-design-ddd-part-1/collaboration-spectrum.png)
+*Integration patterns are determined mainly by the level of cooperation between the teams that own the interacting bounded contexts.*
+
 ## Cooperation patterns
 
 When the components that need to interact are owned by teams which are in close communication, work well together, and their goals are aligned, **cooperation** patterns can be applied.
@@ -243,7 +246,7 @@ Of course, they can also offer valuable insight into organizational dynamics, as
 
 As with any document, they run the risk of becoming stale as the system evolves. So it should be a team-wide responsibility to keep it up to date. Each team taking care of their own components and their integration points.
 
-![Collaboration spectrum](high-level-system-analysis-and-design-ddd-part-1/collaboration-spectrum.png)
-*Integration patterns are determined mainly by the level of cooperation between the teams that own the interacting bounded contexts.*
+# The DDD high level design concept map
 
-<!-- TODO: draw a diagram that explains the prcess of going from a big domain into subdomains into ubiquitous language into bounded contexts into the interaction between them -->
+![The DDD high level design concept map](high-level-system-analysis-and-design-ddd-part-1/concept-map.png)
+*These are the main concepts that we've explored so far, and how they relate to each other.*
