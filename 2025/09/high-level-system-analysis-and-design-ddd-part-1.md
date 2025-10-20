@@ -10,6 +10,8 @@ tags:
 - books
 ---
 
+# High level system analysis and design with Domain-Driven Design
+
 > This is part 1 of a series of blog posts on Domain-Driven Design:
 >
 > 1. [High level system analysis and design with Domain-Driven Design](https://www.endpointdev.com/blog/)
@@ -51,7 +53,6 @@ With the help of domain experts, developers can identify subdomains, understand 
 
 **Supporting subdomains** on the other hand, do not provide any competitive advantage, nor are they very complex. They are however, necessary because they support the core business activities, and are fairly unique. The solutions to problems in these areas usually take the form of [CRUD](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete) or [ETL](https://en.wikipedia.org/wiki/Extract,_transform,_load) oriented activities. Imagine for example populating a data warehouse, translating transactional business data into a format appropriate for analytics and business intelligence in a manufacturing corporation. Or maybe the digitization and storage of a registry of court documents for a law firm. These are behind the scenes activities that support the organizations' main businesses, but their business logic complexity is not high, and they don't really represent big selling points for the company.
 
-<!-- Maybe we can remove this paragraph? -->
 It's worth noting as well, that there may be subdomains where software solutions are not appropriate, even if they are highly complex core subdomains. They are still part of the business so it's worth identifying and considering for high level architectural design decisions. If anything, to know what parts of the business the planned software system should and should not focus on. You could have a restaurant, for example, who prides themselves in having the best desserts in the city. For their business, the recipe development activities constitute a core subdomain. This is dependent on the art and craftsmanship of the chefs. Not an area in which software solutions could help a whole lot.
 
 It's also worth noting that, just as organizations' business strategies are dynamic, so too can be their subdomain distribution. Today's generic subdomain can be tomorrow's core subdomain, and so on. For example, imagine a big retail store chain that, up until now, managed its inventory in an industry standard way. But it has grown so much that the standard way of doing things has become a bottleneck for them. So they design a new procedure for highly efficient inventory management, and that gives them an edge against competitors. Inventory management started as a generic subdomain for them, but due to an ever evolving business strategy, it became a core subdomain.
@@ -136,6 +137,9 @@ The [Agile Manifesto](https://agilemanifesto.org/) declares: "Individuals and in
 A glossary of terms is a great asset for keeping a ubiquitous language. A wiki is a good place to put this. Definitions for key concepts in the business like entities, processes and rules can be captured here. The only caveat is that documentation is static by nature, while the ubiquitous language is continually evolving. So, great care needs to be taken to keep the wiki updated at all times to reflect the latest and most complete understanding of the domain. This should not be relegated to or gate-keeped by only certain people; it should be a team effort where everyone contributes.
 
 An automated acceptance tests suite, written using [Behavior Driven Development](https://en.wikipedia.org/wiki/Behavior-driven_development) frameworks, like [Cucumber](https://cucumber.io/), is also a great way of capturing the ubiquitous language. The advantage of these tests is that they are written in plain human-readable language, not code. And while it may be a far fetched to think that non technical domain experts would be capable of writing and maintaining such tests, they certainly can read and understand them, which is a great boon. These tests speak the language they understand: the language of the business.
+
+![Cucumber tests](high-level-system-analysis-and-design-ddd-part-1/cucumber.png)
+*This is what Cucumber tests look like.*
 
 By nature of being executable and tied closely to the implementation code, there is less chance that they become out of date. This can happen more easily with static documentation written in a wiki. The disadvantage is that they require much more effort. But for the right kind of project, one where business logic is very complex or the scope is very wide, they can be very well worth the cost.
 
