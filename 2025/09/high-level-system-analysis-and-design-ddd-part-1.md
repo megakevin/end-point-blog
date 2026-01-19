@@ -23,7 +23,7 @@ Domain-Driven Design is an approach to software development that focuses on, [as
 
 DDD is not just about writing code though. It's a whole methodology that touches on business needs, requirements gathering, organizational dynamics, high level architectural design, and lower level patterns for implementing software intensive systems.
 
-As a result, DDD is a big and complex approach to software development, one that's best deployed fully to tackle complex systems. It offers however, a treasure trove of concepts, patterns and tools that can be applied to any software project, regardless of the size.
+As a result, DDD offers a treasure trove of concepts, patterns and tools that can be applied to any software project, regardless of the size and complexity.
 
 In this series of blog posts we're going to explore many aspects of DDD. We will be following the structure laid out by [Vlad Khononov](https://vladikk.com/)'s excellent book on the topic "[Learning Domain-Driven Design: Aligning Software Architecture and Business Strategy](https://www.oreilly.com/library/view/learning-domain-driven-design/9781098100124/)". So you can think of this series as a summary of that book. An abridged version that can serve as a review for anybody who has read it; but also as an entry point for people who are new to DDD.
 
