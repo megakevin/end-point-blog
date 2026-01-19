@@ -23,7 +23,7 @@ Domain-Driven Design is an approach to software development that focuses on, [as
 
 DDD is not just about writing code though. It's a whole methodology that touches on business needs, requirements gathering, organizational dynamics, high level architectural design, and lower level patterns for implementing software intensive systems.
 
-As a result, DDD is a big and complex approach to software development, one that's best deployed fully to tackle complex systems. It offers however, a treasure trove of concepts, patterns and tools that can be applied to any software project, regardless of the size.
+As a result, DDD offers a treasure trove of concepts, patterns and tools that can be applied to any software project, regardless of the size and complexity.
 
 In this series of blog posts we're going to explore many aspects of DDD. We will be following the structure laid out by [Vlad Khononov](https://vladikk.com/)'s excellent book on the topic "[Learning Domain-Driven Design: Aligning Software Architecture and Business Strategy](https://www.oreilly.com/library/view/learning-domain-driven-design/9781098100124/)". So you can think of this series as a summary of that book. An abridged version that can serve as a review for anybody who has read it; but also as an entry point for people who are new to DDD.
 
@@ -33,7 +33,7 @@ Now that we've explored DDD's higher level system design concepts, it's time to 
 
 ### Transaction script
 
-[According to Martin Fowler](https://martinfowler.com/eaaCatalog/transactionScript.html), the transaction script pattern "organizes business logic by procedures where each procedure handles a single request from the presentation."
+[According to Martin Fowler](https://martinfowler.com/eaaCatalog/transactionScript.html), the **transaction script** pattern "organizes business logic by procedures where each procedure handles a single request from the presentation."
 
 For most programmers that have experience with procedural languages, the transaction script is easy to grasp. This pattern is about conceptualizing a system as a collection of transactions. And organizing these transactions as independent, transactional procedural scripts. Think one transaction script per use case, exposed for the users to invoke when they need to.
 
@@ -71,9 +71,9 @@ class AddItemToQuote
 }
 ```
 
-That is, a transaction script needs to actually be transactional. It needs to be atomic. Of course, each domain's requirements will dictate how true this is, but in general, we want transaction scripts to operate as a unit, and make sure that they don't leave the system in an inconsistent state in situations when the script fails midway through its execution.
+That is, a transaction script needs to actually be **transactional**. It needs to be atomic. Of course, each domain's requirements will dictate how true this is, but in general, we want transaction scripts to operate as a unit, and make sure that they don't leave the system in an inconsistent state in situations when the script fails midway through its execution.
 
-If all the script does is interact with a relational database, it is easy to address this issue. The solution is to perform the operations within a database transaction:
+If all the script does is interact with a relational database, it is easy to address this issue. The solution is to perform the operations within a **database transaction**:
 
 ```csharp
 class AddItemToQuoteWithTransaction
@@ -110,7 +110,7 @@ class AddItemToQuoteWithTransaction
 }
 ```
 
-The problem gets more complicated when the script performs a distributed transaction. That is, when it interacts with other systems which are outside of the scope of a relational database transaction. For example, interacting with the file system, or with an external web service.
+The problem gets more complicated when the script performs a **distributed transaction**. That is, when it interacts with other systems which are outside of the scope of a relational database transaction. For example, interacting with the file system, or with an external web service.
 
 ```csharp
 class AddItemToQuoteWithDistributedTransaction
@@ -153,14 +153,14 @@ class IncrementQuoteItemQuantity
 }
 ```
 
-Even though that's a single database operation, there is inter-system communication between the user's browser and the application server and between the app server and the database. A network outage, for example, that happens in the middle of this transaction can leave the system in an inconsistent state. If it fails after it's already submitted the `UPDATE` command to the database, and responds with a failure message to the client, the client might attempt to try and increase the quantity again. This would result in the increment being done two times, when actually it should have been only one.
+Even though that's a single database operation, there is inter-system communication between the user's browser and the application server; and between the application server and the database. A network outage, for example, that happens in the middle of this operation can leave the system in an inconsistent state. If it fails after it's already submitted the `UPDATE` command to the database, and responds with a failure message to the client, the client might attempt to try and increase the quantity again. This would result in the increment being done two times, when actually it should have been only one.
 
 ![Implicit distributed transaction](implementing-business-logic-ddd-part-2/implicit-distributed-transaction.png)
 *In the context of client-server applications, some transactions are distributed even though at first glance they might not seem that way. In this simple operation, there are three systems interacting over the network: The client, the application server and the database.*
 
 There are two possible ways of handling this type of situation: making the operation idempotent, or using optimistic concurrency control.
 
-One way to make the operation idempotent, that is, to make sure that it always produces the same results, no matter how many times it's done, is to have the caller specify the quantity to update the item to. That is, changing the operation from "add one quantity", to "set the quantity to this". Like so:
+One way to make the operation **idempotent**, that is, to make sure that it always produces the same results, no matter how many times it's done, is to have the caller specify the quantity to update the item to. That is, changing the operation from "add one quantity", to "set the quantity to this". Like so:
 
 ```csharp
 class IncrementQuoteItemQuantityIdempotent
@@ -178,7 +178,7 @@ class IncrementQuoteItemQuantityIdempotent
 }
 ```
 
-On the other hand, implementing optimistic concurrency control in this scenario could be done by effectuating the record update while using the current state of the record when checking for a match. This boils down to including the expected values of the different fields in the `WHERE` clause. This way, the record will be updated only if it is in the state that the caller expected it to be:
+On the other hand, implementing **optimistic concurrency control** in this scenario could be done by effectuating the record update while using the current state of the record when checking for a match. This boils down to including the expected values of the different fields in the `WHERE` clause. This way, the record will be updated only if it is in the state that the caller expected it to be:
 
 ```csharp
 class IncrementQuoteItemQuantityOptimisticConcurrency
@@ -189,8 +189,8 @@ class IncrementQuoteItemQuantityOptimisticConcurrency
     {
         _db.ExecuteSql($"""
             UPDATE quote_items
-            SET quantity = quantity + 1 WHERE id = {quoteItemId}
-            AND quantity = {quantity};
+            SET quantity = quantity + 1
+            WHERE id = {quoteItemId} AND quantity = {quantity};
         """);
     }
 }
@@ -200,7 +200,7 @@ In both cases, the caller would have to obtain the current state of the record b
 
 ### Active record
 
-[Martin Fowler describes](https://www.martinfowler.com/eaaCatalog/activeRecord.html) the active record pattern as "an object that wraps a row in a database table or view, encapsulates the database access, and adds domain logic on that data."
+[Martin Fowler describes](https://www.martinfowler.com/eaaCatalog/activeRecord.html) the **active record** pattern as "an object that wraps a row in a database table or view, encapsulates the database access, and adds domain logic on that data."
 
 The main advantage of the active record pattern is that it greatly simplifies database access. Especially when leveraging [ORM frameworks](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping). With active record, you usually end up with a set of classes that closely mirror your database structure. You have one class per table, where the fields of those classes represent table columns and the instances of those classes represent individual records in those tables.
 
@@ -213,7 +213,7 @@ class AddItemToQuoteActiveRecord
 
     public void Run(int quoteId, int productId, int quantity)
     {
-        // Active Record allows us to work with objects instead of directly
+        // Active record allows us to work with objects instead of directly
         // issuing database commands.
         var item = new QuoteItem
         {
@@ -267,9 +267,9 @@ order.update(
 )
 ```
 
-*The [Active Record](https://guides.rubyonrails.org/active_record_basics.html) framework from Ruby on Rails is a great implementation of the pattern that puts business logic in a centralized location while extending the objects with all the data access logic they need.*
+*The [Active Record](https://guides.rubyonrails.org/active_record_basics.html) framework from Ruby on Rails is a great implementation of the pattern that puts business logic in a centralized location while *magically* extending the objects with all the data access logic they need.*
 
-This is a step up from raw transaction scripts, but still it has its own disadvantages. First, the active records can end up having too much responsibility, and grow to unmanageable sizes, especially for core business entities. Second, the active record pattern by itself does not enforce access control on its properties. Meaning that external processes can freely modify their state, potentially ignoring any business rules that could bind them.
+This is a big step up from raw transaction scripts, but still it has its own disadvantages. First, the active records can end up having too much responsibility, and grow to unmanageable sizes, especially for core business entities. Second, the active record pattern by itself does not enforce access control on its properties. Meaning that external processes can freely modify their state, potentially ignoring any business rules that could bind them.
 
 Something else to be aware of is that when active records define little to no behavior, that is, when they don't implement business logic, they become an [anemic domain model](https://martinfowler.com/bliki/AnemicDomainModel.html). Active record objects that focus only on database access tasks, and higher level "service objects" that manipulate them and implement all the domain logic themselves are the hallmark of anemic domain models.
 
@@ -285,18 +285,18 @@ When implementing complex business logic, the patterns that we've seen up to thi
 
 ### Domain model
 
-[Taking from Martin Fowler's definition](https://martinfowler.com/eaaCatalog/domainModel.html), we learn that the domain model is a full object-oriented model of the domain, that incorporates both behavior and data. Domain models take the form of a large web of interconnected objects, where each one represents a meaningful concept in the business.
+[Taking from Martin Fowler's definition](https://martinfowler.com/eaaCatalog/domainModel.html), we learn that the **domain model** is a full object-oriented model of the domain, that incorporates both behavior and data. Domain models take the form of a large web of interconnected objects, where each one represents a meaningful concept in the business domain.
 
 In his book, Eric Evans expanded greatly on this definition, introducing a set of patterns and tools for implementing domain models. Indeed, to build a domain model, we incorporate other building block patterns: value objects, entities, aggregates, domain events, domain services.
 
 Also, there are two main rules that a domain model needs to follow:
 
-1. There should be no dependency on particular frameworks or infrastructure. Objects in the domain model should be plain old objects, focused only on domain logic.
-2. The domain model should speak the ubiquitous language of the bounded context in which it operates. That means that all identifiers should call back to business concepts and it should represent the mental model of the domain experts.
+1. There should be no dependency on particular frameworks or infrastructure. Objects in the domain model should be **plain old objects**, focused only on domain logic.
+2. The domain model should speak the **ubiquitous language** of the **bounded context** in which it operates. That means that all identifiers should call back to business concepts and it should represent the mental model of the domain experts.
 
 ### Value object
 
-A value object is an object whose identity is given by its properties. That is, its value. It does not have an explicit identifier, like an Id field. Consider for example a point object:
+A **value object** is an object whose identity is given by its properties. That is, its value. It does not have an explicit identifier, like an Id field. Consider for example a `Point` object:
 
 ```csharp
 class Point
@@ -308,9 +308,9 @@ class Point
 
 The X and Y values completely define a point. Two instances of this class with the same X and Y coordinates represent the same point. Changing the value of either coordinate produces a new point.
 
-They are useful for representing properties of other objects and are usually implemented as immutable objects. One of the great strengths of value objects is that they allow the model to speak the ubiquitous language by replacing primitives with bespoke small objects that make the code clearer and encapsulate related business logic.
+They are useful for representing properties of other objects and are usually implemented as **immutable objects**. One of the great strengths of value objects is that they allow the model to speak the ubiquitous language by replacing primitives with bespoke small objects that make the code clearer and encapsulate related business logic.
 
-As an example, consider this "Order" class.
+As an example, consider this `Order` class.
 
 ```csharp
 class Order
@@ -336,7 +336,7 @@ var order = new Order(
 );
 ```
 
-Here, all the values are assigned by convention. An email, a phone number, a status... They are all just strings with no special behavior or meaning.
+Here, all the values are assigned by convention. An email, a phone number, a status... They are all just strings with no special behavior or meaning. We must know what they look like beforehand in order to assign them correctly.
 
 If we use value objects, this class could be implemented like this instead:
 
@@ -368,9 +368,9 @@ var order = new Order(
 
 This approach has many advantages:
 
-First of all the Order class does not have to validate its fields. Validation can happen in the value objects. This is good because it allows other domain objects to have fields of the same type without having to duplicate the validation logic themselves. Imagine you also have a contact object somewhere in your model that includes a phone number field, for example. Both it and Order can reuse the phone number value object, and the logic it carries.
+First of all the `Order` class does not have to validate its fields. Validation can happen in the value objects. This is good because it allows other domain objects to have fields of the same type without having to duplicate the validation logic themselves. Imagine you also have a contact object somewhere in your model that includes a phone number field, for example. Both it and `Order` can reuse the phone number value object, and the logic it carries.
 
-Secondly, value objects can capture the business logic that's closely related to them. The phone number field, for example can implement methods to obtain further information about it like its area code or the country it belongs to. The weight value object can implement logic for converting from one measuring system to another.
+Secondly, value objects can capture the business logic that's closely related to them. A phone number field, for example can implement methods to obtain further information about it like its area code or the country it belongs to. A "weight" value object can implement logic for converting from one measuring system to another.
 
 ```csharp
 // Here's a weight value object that encapsulates logic like converting from one
@@ -398,15 +398,15 @@ Finally, using value objects lets the model speak the ubiquitous language, and t
 
 ### Entities
 
-Entities are objects that represent the concepts in the domain that have a lifecycle and explicit identification. A person, an order, a lead, a transaction. These are all examples of entities. Entities, as opposed to value objects, are not immutable, and are expected to change throughout their life in the system. Value objects, like we saw before, are ideal for representing properties of entities.
+**Entities** are objects that represent the concepts in the domain that have a lifecycle and explicit identification. A person, an order, a lead, a transaction. These are all examples of entities. Entities, as opposed to value objects, are **not immutable**, and are expected to change throughout their life in the system. Value objects, like we saw before, are ideal for representing properties of entities.
 
 Entities are a core building block for a domain model. However, they are not used independently. They are used as part of an aggregate.
 
 ### Aggregates
 
-An aggregate is a hierarchy of entities and value objects that are bound together by closely related business logic. The aggregate forms a boundary that protects the consistency of the objects that compose it. It achieves this by preventing external objects from directly modifying its state and defining a public interface through which other parts of the system can interact with it.
+An **aggregate** is a **hierarchy** of entities and value objects that are bound together by closely related business logic. The aggregate forms a boundary that protects the consistency of the objects that compose it. It achieves this by preventing external objects from directly modifying its state and defining a public interface through which other parts of the system can interact with it.
 
-The rest of the system cannot directly mutate the state of the entities within an aggregate. They can only do so via the methods exposed by the aggregate's public interface. These methods, so called "commands", encapsulate the aggregate's business logic and protect them from corruption, by enforcing the necessary validations and invariants. Indeed, all the business logic that's closely related to the aggregate lives in one place: the aggregate itself.
+The rest of the system cannot directly mutate the state of the entities within an aggregate. They can only do so via the methods exposed by the aggregate's public interface. These methods, so called **commands**, encapsulate the aggregate's business logic and protect them from corruption, by enforcing the necessary validations and invariants. Indeed, all the business logic that's closely related to the aggregate lives in one place: the aggregate itself.
 
 ```csharp
 // Here we have an aggregate that represents a shopping cart and its items.
@@ -447,14 +447,14 @@ public class Quote
 }
 ```
 
-These commands, which are the public interface of an aggregate, should all be defined in a single entity within the aggregate. We call this entity the aggregate root. If the aggregate is a hierarchy of objects, and we can picture it as a tree, the root is the object that exists at the root of the tree, where all branches come from.
+These commands, which are the public interface of an aggregate, should all be defined in a single entity within the aggregate. We call this entity the **aggregate root**. If the aggregate is a hierarchy of objects, and we can picture it as a tree, then the root is the object that exists at the root of the tree, where all branches come from.
 
 ![The aggregate root](implementing-business-logic-ddd-part-2/aggregate-root.png)
 *The aggregate is a hierarchy of objects. The aggregate root is the sole object in this hierarchy with which other components interact.*
 
-This focus on commands makes the implementation of the application layer components more straightforward. I.e. they become transaction scripts. By "application layer components", I mean those components that orchestrate calls to the domain model in order to fulfill use cases in response to, say, user requests. They follow a general pattern of:
+This focus on commands makes the implementation of the application layer components more straightforward. I.e. they become **transaction scripts**. By "application layer components", I mean those components that orchestrate calls to the domain model in order to fulfill use cases in response to, say, user requests. They follow a general pattern of:
 
-1. Load the aggregate. Typically from storage.
+1. Load the aggregate. Typically from persistent storage.
 2. Invoke the desired command.
 3. Persist the new state of the aggregate.
 
@@ -494,15 +494,15 @@ class AddItemToQuote
 }
 ```
 
-There are other rules that aggregates need to follow. One of them is that the aggregate acts as a transaction boundary for aggregate operations. That is, all changes to an aggregate should be transactional, atomic. Also, no system operation should involve a transaction that includes different aggregates. We should have one aggregate per database transaction.
+There are other rules that aggregates need to follow. One of them is that the aggregate acts as a **transaction boundary** for aggregate operations. That is, all changes to an aggregate should be transactional, atomic. Also, no system operation should involve a transaction that includes different aggregates. We should have one aggregate per database transaction.
 
-This reveals another aspect of aggregates: An aggregate should expect strong consistency only on its own objects. For objects that are outside of the aggregate, eventual consistency should suffice. Or, looking at it from a different angle, this means that when designing an aggregate, data consistency is a guiding principle. The data that needs to be strongly consistent in order to fulfill the business requirements, should be included in the aggregate. The data that can be eventually consistent and still meet the requirements, probably belongs in a different aggregate.
+This reveals another aspect of aggregates: An aggregate should expect **strong consistency** only on its own objects. For objects that are outside of the aggregate, eventual consistency should suffice. Or, looking at it from a different angle, this means that when designing an aggregate, data consistency is a guiding principle. The data that needs to be strongly consistent in order to fulfill the business requirements, should be included in the aggregate. The data that can be eventually consistent and still meet the requirements, probably belongs in a different aggregate.
 
 At first glance, all these rules for aggregates may seem overly limiting. But the main idea is to keep their scope as constrained as possible, to prevent them from growing too much and taking on too many responsibilities. We should strive to keep aggregates small, highly cohesive, and decoupled from other system components. That unlocks the ability for them to be reorganized and reused in many ways. This helps avoid code duplication when fulfilling the requirements of today while also reducing the cost of evolving to meet the requirements of tomorrow.
 
 ### Domain event
 
-Through their public interface, the outside world can send messages to aggregates. Domain events are the mechanism through which aggregates can send messages to the outside world. As their name suggests, domain events are messages that describe important events that have happened in the business domain, related to an aggregate. Think "order placed", "user registered" or "product out of stock". The events should provide all necessary data that allows consumers to understand what has happened.
+Through their commands, the outside world can send messages to aggregates. **Domain events** are the mechanism through which aggregates can themselves send messages to the outside world. As their name suggests, domain events are messages that describe important events that have happened in the business domain, related to an aggregate. Think "order placed", "user registered" or "product out of stock". The events should provide all necessary data that allows consumers to understand what has happened.
 
 ```json
 // This JSON data describes the event of an item being added to a shopping cart.
@@ -542,7 +542,7 @@ Domain events are also part of an aggregate's public interface. Just like its co
 
 ### Domain service
 
-Sometimes there's business logic that doesn't belong to a particular aggregate or value object, or that involves multiple aggregates. Domain services can be implemented in these cases. Domain services are simple stateless objects that implement some business logic. Somewhat like an aggregate's command, but defined outside of an aggregate.
+Sometimes there's business logic that doesn't belong to a particular aggregate or value object, or that involves multiple aggregates. **Domain services** can be implemented in these cases. Domain services are simple stateless objects that implement some business logic. Somewhat like an aggregate's command, but defined outside of an aggregate.
 
 ```csharp
 // Domain services are a good solution for implementing logic that orchestrates
@@ -569,10 +569,6 @@ class PlaceOrder
             // and a separate payment processing component picking it up and
             // getting to work. Then, inventory and shipping components could
             // continue processing the order after the payment is successful.
-            //
-            // _payment.ProcessPayment(order);
-            // _inventory.UpdateStock(order);
-            // _shipping.ScheduleDelivery(order);
 
             return Result.Success();
         }
@@ -586,7 +582,7 @@ class PlaceOrder
 
 Of course, the rule of "modify only one aggregate per transaction" still applies. Even for domain services that orchestrate business operations that involve multiple aggregates. Remember, if strong consistency is needed across separate aggregates, and thus they have operations that need to be executed within the same transaction, then maybe these objects should be part of the same aggregate in the first place.
 
-It's also important to consider domain services as a sort of last resort. A final domain modeling tool to use only when the other tools like aggregates, value objects, commands and events, fall short and truly can't meet the requirements on their own.
+It's also important to consider domain services as a sort of last resort. A final domain modeling tool to use only when the other tools like aggregates, value objects, commands and domain events, fall short and truly can't meet the requirements on their own.
 
 ### Data access concerns
 
@@ -600,7 +596,7 @@ But the main takeaway is this: the domain model does not concern itself with dat
 
 ## Chapter 7: Modeling the dimension of time
 
-The event sourced domain model is a further evolution of the domain model which incorporates the dimension of time. By leveraging domain events as the source of truth for system data, it allows for a model that can provide deeper insight into the data, rich audit logging, and visibility into the state of the aggregates and entities at any previous point in their lifecycle.
+The **event sourced domain model** is a further evolution of the domain model which incorporates the dimension of **time**. By leveraging domain events as the source of truth for system data, it allows for a model that can provide deeper insight into the data, rich audit logging, and visibility into the state of the aggregates and entities at any previous point in their lifecycle.
 
 ### Data storage and retrieval
 
@@ -609,7 +605,7 @@ The main characteristic that differentiates event sourcing from a traditional do
 ![The event sourcing data flow](implementing-business-logic-ddd-part-2/event-sourced-aggregate.png)
 *In an event sourced domain model, aggregates produce events and commit them to the event store. To instantiate aggregates then, the same events are fetched from the event store and used to rehydrate the in-memory objects.*
 
-For example, in a database that backs an order processing system, an orders table might look like this:
+For example, in a database that backs an order processing system, an `orders` table might look like this:
 
 | id | status | email | phone | shipping_weight | country_code | created_at | updated_at |
 | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
@@ -700,7 +696,7 @@ With event sourcing, what we persist into our database is a series of events tha
 }
 ```
 
-We call this database, the event store. This is an append-only storage mechanism that needs to support two features: fetching events that belong to a particular business entity and adding new ones.
+We call this database, the **event store**. This is an append-only storage mechanism that needs to support two features: fetching events that belong to a particular business entity and adding new ones.
 
 ```csharp
 // An event store only needs to support two features: fetching and appending.
@@ -711,7 +707,7 @@ interface IEventStore
 }
 ```
 
-In code, when we want to retrieve an order from storage, what we do is fetch all its events, iterate over them and apply the changes they represent to an in-memory object, until it is fully reconstructed, or "rehydrated". In the context of event sourcing, we call these representations of collections of events, projections. In an event sourced domain model, aggregates leverage these projections to figure out their current state.
+In code, when we want to retrieve an order from storage, what we do is fetch all its events, iterate over them and apply the changes they represent to an in-memory object, until it is fully reconstructed, or "rehydrated". In the context of event sourcing, we call these representations of collections of events, **projections**. In an event sourced domain model, aggregates leverage these projections to figure out their current state.
 
 ```csharp
 // This is a hypothetical order aggregate in an event sourced domain model.
@@ -824,7 +820,7 @@ class OrderStateProjection
 
 Notice the `Version` field in the projection, which indicates the number of changes that the entity has gone through.
 
-On the other hand, when it comes to appending new events for an aggregate, the event store needs to be aware of potential concurrency problems and handle them. After all, the ordering of the events matter. That's why the event store usually implements optimistic concurrency control, leveraging the version field we touched on earlier. Essentially, when trying to append new events, the version being worked with is specified. If it doesn't match the current version of the aggregate in the event store (maybe because some other process appended a new event), then the operation has to fail, or otherwise adapt to make sure the data remains consistent.
+On the other hand, when it comes to appending new events for an aggregate, the event store needs to be aware of potential concurrency problems and handle them. After all, the ordering of the events matter. That's why the event store usually implements **optimistic concurrency control**, leveraging the version field we touched on earlier. Essentially, when trying to append new events, the version being worked with is specified. If it doesn't match the current version of the aggregate in the event store (maybe because some other process appended a new event), then the operation has to fail, or otherwise adapt to make sure the data remains consistent.
 
 ### Advantages and disadvantages
 
