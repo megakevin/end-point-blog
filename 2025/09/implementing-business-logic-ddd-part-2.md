@@ -19,7 +19,7 @@ tags:
 > 3. [Designing software architecture with Domain-Driven Design](https://www.endpointdev.com/blog/)
 > 4. [Blog post #4](https://www.endpointdev.com/blog/)
 
-Domain-Driven Design is an approach to software development that focuses on, [as Eric Evans puts it](https://www.oreilly.com/library/view/domain-driven-design-tackling/0321125215/), "tackling the complexity in the heart of software". And what is in the heart of software? The business domain in which it operates. Or more specifically: a model of it, made of code. That is, the code that implements the business logic that comes into play when solving problems within the realm of a particular business activity.
+**Domain-Driven Design** is an approach to software development that focuses on, [as Eric Evans puts it](https://www.oreilly.com/library/view/domain-driven-design-tackling/0321125215/), "tackling the complexity in the heart of software". And what is in the heart of software? The business domain in which it operates. Or more specifically: a **model** of it, made of code. That is, the code that implements the business logic that comes into play when solving problems within the realm of a particular business activity.
 
 DDD is not just about writing code though. It's a whole methodology that touches on business needs, requirements gathering, organizational dynamics, high level architectural design, and lower level patterns for implementing software intensive systems.
 
@@ -590,11 +590,11 @@ As we've stated at the beginning, the domain model should be made of plain old o
 
 In practical terms, your choice of technology stack and software development framework will usually dictate the mechanisms you use for interacting with persistent data storage. But that doesn't matter to the domain model, with the correct abstraction, it should be compatible with any data access mechanism. Here are a few patterns worth mentioning:
 
-We've already seen [active record](https://www.martinfowler.com/eaaCatalog/activeRecord.html) being used as a data access strategy. Particularly useful when paired with an ORM framework. The [repository pattern](https://martinfowler.com/eaaCatalog/repository.html) is also a good fit for solving the data access problem in the context of DDD. It offers a clear, intention-revealing interface for data retrieval and modification. [Unit of work](https://martinfowler.com/eaaCatalog/unitOfWork.html) is also a pattern worth looking into, for coordinating numerous database operations.
+We've already seen [active record](https://www.martinfowler.com/eaaCatalog/activeRecord.html) being used as a data access strategy. Particularly useful when paired with an ORM framework. Due to its nature of tieing infrastructure concerns (i.e. data access logic) with the business logic, you have to jump through some hoops to make it work with a domain model. But it can be done. The [repository pattern](https://martinfowler.com/eaaCatalog/repository.html) is also a good fit for solving the data access problem in the context of DDD. It offers a clear, intention-revealing interface for data retrieval and modification. [Unit of work](https://martinfowler.com/eaaCatalog/unitOfWork.html) is also a pattern worth looking into, for coordinating numerous database operations.
 
 But the main takeaway is this: the domain model does not concern itself with data access, or frameworks, or infrastructure. So make sure to keep it plain and use abstractions to keep it unconcerned.
 
-## Chapter 7: Modeling the dimension of time
+## Chapter 7: Modeling the Dimension of Time
 
 The **event sourced domain model** is a further evolution of the domain model which incorporates the dimension of **time**. By leveraging domain events as the source of truth for system data, it allows for a model that can provide deeper insight into the data, rich audit logging, and visibility into the state of the aggregates and entities at any previous point in their lifecycle.
 
