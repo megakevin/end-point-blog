@@ -27,17 +27,35 @@ As a result, DDD offers a treasure trove of concepts, patterns and tools that ca
 
 In this series of blog posts we're going to explore many aspects of DDD. We will be following the structure laid out by [Vlad Khononov](https://vladikk.com/)'s excellent book on the topic "[Learning Domain-Driven Design: Aligning Software Architecture and Business Strategy](https://www.oreilly.com/library/view/learning-domain-driven-design/9781098100124/)". So you can think of this series as a summary of that book. An abridged version that can serve as a review for anybody who has read it; but also as an entry point for people who are new to DDD.
 
+## Table of contents
+
+- [Designing software architecture with Domain-Driven Design](#designing-software-architecture-with-domain-driven-design)
+  - [Table of contents](#table-of-contents)
+  - [Chapter 8: Architectural patterns](#chapter-8-architectural-patterns)
+    - [Layered architecture](#layered-architecture)
+    - [Ports and adapters](#ports-and-adapters)
+    - [Command query responsibility segregation](#command-query-responsibility-segregation)
+    - [Scope](#scope)
+  - [Chapter 9: Communication patterns](#chapter-9-communication-patterns)
+    - [Model translation](#model-translation)
+    - [Stateless model translation](#stateless-model-translation)
+    - [Stateful model translation](#stateful-model-translation)
+    - [Integrating aggregates](#integrating-aggregates)
+    - [Outbox](#outbox)
+    - [Saga](#saga)
+    - [Process manager](#process-manager)
+
 ## Chapter 8: Architectural patterns
 
 Now that we've seen various patterns for implementing business logic, i.e. "the heart of software". We turn our attention to architecture.
 
 Indeed, the business logic is the raison d'être for a software application. But applications have other responsibilities that are also important. Like interacting with users, receiving requests and returning results, storing data, interfacing with external services. In order to balance all these concerns and make sure the code base does not devolve into an unmaintainable big ball of mud, we need to be intentional in how we organize it. We need to design its architecture.
 
-That is, the rules and principles that we follow to organize the various aspects of code base and create clear boundaries between them. In essence, defining the system's big logical components, their dependencies and interactions.
+That is, the rules and principles that we follow to organize the various aspects of the code base and create clear boundaries between them. In essence, defining the system's big logical components, their dependencies and interactions.
 
 In this section we will see three common architectural patterns: layered architecture, ports and adapters, and command query responsibility segregation.
 
-### Layered Architecture
+### Layered architecture
 
 The **layered architecture** is one of the most common architectural patterns out there. It has been present, in one form or another, for a long time. The main idea of the pattern is to separate applications into three layers: the presentation layer, the business logic layer, and the data access layer.
 
@@ -186,7 +204,7 @@ The communication between these layers is one-way, from top to bottom. Meaning t
 
 This communication pattern is excellent for active record and transaction script based systems. For domain models, it begins to fall a bit short. This is because the business logic depending on the data access logic contradicts one of the core principles of domain models: the fact that they are supposed to be plain old objects, with no dependencies on frameworks or infrastructure.
 
-### Ports and Adapters
+### Ports and adapters
 
 The **ports and adapters architecture** leverages the dependency inversion principle to address the shortcomings of the traditional layered architecture and make it ideal for implementing domain models. Its main advantage is that it decouples the business logic layer from the infrastructure.
 
@@ -316,7 +334,7 @@ So, the ports and adapters architectural pattern has a **business logic layer** 
 
 Clean architecture, onion architecture and hexagonal architecture are all different names for the same core concepts and principles espoused by ports and adapters; sometimes with slight variations depending on the particular flavor and tech stack.
 
-### Command Query Responsibility Segregation
+### Command query responsibility segregation
 
 The **command query responsibility segregation pattern** (CQRS) builds on the principles from ports and adapters and adds support for multiple different representations of the system's data. That is, having multiple persistence models for the same data set. One of the most common examples is a system that stores and operates on day to day business transactions using an OLTP ([online transaction processing](https://en.wikipedia.org/wiki/Online_transaction_processing)) representation, but also needs to provide an OLAP ([online analytical processing](https://en.wikipedia.org/wiki/Online_analytical_processing)) data warehouse for high level business analysis. One ground-truth source of data (the OLTP) is used to produce additional representations with a different schema (the OLAP). CQRS enables this.
 
@@ -324,7 +342,7 @@ As such, CQRS is ideal for event sourced domain models, because it allows persis
 
 At the core of CQRS there are two types of models: a command execution model (the C in CQRS) and one or many read, or query, models (the Q in CQRS). In database terms, this is similar to a [**primary-replica**](https://en.wikipedia.org/wiki/Master%E2%80%93slave_(technology)) type of situation, where the command execution model represents the primary, and the read models represent the replicas.
 
-![Command Query Responsibility Segregation](designing-software-architecture-ddd-part-3/cqrs.png)
+![Command query responsibility segregation](designing-software-architecture-ddd-part-3/cqrs.png)
 *CQRS exposes two types of models, one for executing commands and many others for reading. In the backend, a projection engine keeps the read models up to date with the latest changes from the command execution model.*
 
 The **command execution model** is the system's source of truth, whose data is strongly consistent. It's the one used to execute and record business operations, and enforce business rules and invariants. All operations that result in changes to the system state are handled here.
@@ -355,3 +373,263 @@ The patterns that we've seen in this section are not exclusively meant as system
 
 ![Architectural slices](designing-software-architecture-ddd-part-3/architectural-slices.png)
 *When needed, different architectural patterns can be deployed to different subdomains within the same bounded context.*
+
+## Chapter 9: Communication patterns
+
+In the last few sections we've discussed how to implement business logic and how to leverage architectural patterns to organize the code within a bounded context. In this section, we will take a higher level view and go beyond the scope of a single bounded context. We will learn about patterns of communication across bounded contexts. In other words, how to integrate them.
+
+### Model translation
+
+Back in [Chapter 4. Integrating Bounded Contexts](https://www.endpointdev.com/blog/), we discussed how bounded contexts use different communication strategies depending on the disposition of the teams that own them. When the teams have strong communication, **cooperation** patterns like **partnership** and **shared kernel** can be used for integration. Here, bounded contexts can communicate without friction. The protocols for doing so are defined by the teams in an ad-hoc manner and development moves forward without too many issues.
+
+However, when the teams are not closely aligned, and cooperation patterns are impossible, a **customer-supplier** relationship emerges. This can be addressed by implementing an **anticorruption layer** in the downstream consumer, to adapt the upstream supplier's model to the consumer's needs. Another option is for the upstream supplier to implement an **open-host service** and expose an integration-specific **published language**, which isolates consumers from the details of its internal model. Both approaches are meant to protect a bounded context's model from the influence of external models.
+
+In these non-cooperation cases, we have to be more intentional in how we design the communication between bounded contexts, and the need for a translation of their models/languages arises. This logic that translates the models can either be stateless or stateful.
+
+### Stateless model translation
+
+**Stateless model translation** can happen on the fly via the [**proxy design pattern**](https://refactoring.guru/design-patterns/proxy). The idea is to put an intermediary component in place, which receives messages in one language, translates them, and forwards them to their destination.
+
+If the proxy is implemented by the consumer or downstream component, functioning as an anticorruption layer, then it intercepts outgoing requests and translates them to a language that the upstream supplier can understand. It does the same with the incoming responses from upstream: it translates them to a language that the consumer can understand.
+
+If the proxy is implemented by the supplier or upstream component, it functions as an open-host service. It takes the incoming requests that come using the published language and translates them to the supplier's internal one. Then, outgoing responses get translated to the published language.
+
+These proxies can be synchronous or asynchronous.
+
+![Synchronous proxy](designing-software-architecture-ddd-part-3/synchronous-proxy.png)
+*In essence, a proxy is nothing more than a component that sits between two other components and translates the messages passing between them.*
+
+**Synchronous** translation is straightforward. Messages are translated just as they are being received or sent, depending on whether the translation happens upstream or downstream. Normally, the translation logic is implemented directly in the bounded context that needs it.
+
+In some cases though, it makes sense to separate it into its own independent component, implementing an [**API gateway**](https://microservices.io/patterns/apigateway.html) pattern. Sometimes, off the shelf software or cloud services like [KrakenD](https://www.krakend.io/) or [AWS API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) can be used to implement them.
+
+Having a separate API gateway has some advantages, other than the obvious decoupling of model translation logic from actual business logic. It can make it easier to [expose multiple versions](https://restfulapi.net/versioning/) of the API. That is, of the published language. It can also be consumed by multiple downstream components, making it essentially an integration-specific bounded context. We call these, **interchange contexts**.
+
+![API Gateway](designing-software-architecture-ddd-part-3/api-gateway.png)
+*When extracted into its own component, a proxy becomes an API gateway. This is useful for further separation of concerns, offering multiple versions of the API's published language, and serving multiple consumers.*
+
+**Asynchronous** translation on the other hand, is not direct. It relies on an event driven design to implement a **message proxy**; which subscribes to events published by one bounded context, translates them, and forwards them to their destination.
+
+The proxy can also apply filtering to the messages, deciding which ones to forward and which ones to ignore. This is useful, for example, to keep the published language free of domain events that are meant to be internal to the bounded context that produces them.
+
+![Asynchronous proxy](designing-software-architecture-ddd-part-3/asynchronous-proxy.png)
+*An asynchronous proxy listens to events in one language and translates them to another language.*
+
+### Stateful model translation
+
+**Stateful model translation** comes into play when more complex translation logic that requires persistent storage is needed. This is useful for two common scenarios: when the requests need to be aggregated, and when data from multiple sources needs to be unified. In both cases the component doing the translation needs to keep track of the incoming requests and messages. It stores them in a database in order to reconstruct them eventually.
+
+**Data aggregation** may be needed for performance reasons when, for example, multiple requests need to be collected together and dispatched as one batch. Another case is when multiple disparate messages need to be combined into one single bigger message that conveys more complete information. This can work both synchronously and asynchronously. That is, the messages can be direct requests or published events.
+
+An API gateway on its own is not appropriate for this type of model translation, as it doesn't provide persistent storage or more complex processing logic beyond mapping and rerouting. Instead, it can be implemented from scratch as a bespoke solution, or leveraging off the shelf stream processing platforms like [Apache Kafka](https://kafka.apache.org/) or [AWS Kinesis](https://aws.amazon.com/kinesis/).
+
+![Stateful model translation](designing-software-architecture-ddd-part-3/stateful-proxy.png)
+*A proxy can aggregate and/or combine multiple separate messages into a single one for performance and unification purposes.*
+
+The **unification of multiple data sources** is also a common case for stateful model translation. This is necessary for example when a component needs to process data from many different upstream suppliers and apply complex business logic to it. This is commonly seen in the [**backend for frontend**](https://samnewman.io/patterns/architectural/bff/) pattern. In this pattern, an API is defined to meet all of a frontend's needs. Allowing it to call a single backend to interact with all the various services it may need.
+
+### Integrating aggregates
+
+Before, we talked about the rules that we follow to limit the scope of aggregates and ensure they encapsulate a coherent set of business logic. We strive to keep them focused, with tight boundaries. They represent strong data consistency and transactional boundaries. That is, they only should contain strongly consistent data and the system's transactions should be limited to a single aggregate instance. It is also true however, that there are business processes that involve multiple aggregates. The following patterns allow us to implement such business processes without breaking the aggregates' isolation rules.
+
+### Outbox
+
+As we know, along with commands, domain events are part of an aggregate's public interface. By publishing domain events to a message bus, aggregates communicate with the outside world. Or more specifically, to their subscribers, who listen to these events in order to trigger their own logic. The outbox pattern allows aggregates to reliably publish domain events.
+
+The **outbox** pattern works by storing domain events in the same database as the aggregate's data. Leveraging database transactions to ensure both the state changes and the events are saved atomically. The process is this:
+
+1. Aggregate state changes and new events are committed in the same database transaction.
+2. The message relay picks up the new events from the database.
+3. The message relay publishes the new events to the message bus.
+4. After successful publishing, the message relay marks the event as such, or deletes it.
+
+![The outbox pattern](designing-software-architecture-ddd-part-3/outbox-pattern.png)
+*The outbox pattern is about storing an aggregate's domain events in a database, making sure to commit them in the same transaction as state changes.*
+
+### Saga
+
+A **saga** leverages the reliable publishing of domain events afforded to us by the outbox pattern to implement business processes that span multiple aggregates. They do this by listening to events and responding to them by issuing commands to relevant components. A saga represents a long-running business process. One that spans multiple transactions.
+
+Sagas can vary in complexity. Sometimes it is enough to respond to events by directly issuing commands from the saga itself.
+
+```csharp
+public class OrderProcessingSaga
+{
+    private readonly IOrderRepository _orderRepository;
+    private readonly IPaymentService _paymentService;
+    private readonly IInventoryService _inventoryService;
+    private readonly IShippingService _shippingService;
+
+    //...
+
+    // These event handler methods all follow a similar pattern:
+    // Receive the event, then call the corresponding command.
+    public void Process(OrderCaptured @event)
+    {
+        var order = _orderRepository.Fetch(@event.OrderId);
+
+        _paymentService.ProcessPayment(order);
+    }
+
+    public void Process(PaymentAccepted @event)
+    {
+        var order = _orderRepository.Fetch(@event.OrderId);
+
+        _inventoryService.PreparePackage(order);
+
+        order.UpdateStatus(@event.NewOrderStatus);
+        _orderRepository.Save(order);
+    }
+
+    public void Process(InventoryCleared @event)
+    {
+        var order = _orderRepository.Fetch(@event.OrderId);
+
+        _shippingService.ScheduleDelivery(order);
+
+        order.UpdateStatus(@event.NewOrderStatus);
+        _orderRepository.Save(order);
+    }
+
+    public void Process(ShipmentDispatched @event)
+    {
+        var order = _orderRepository.Fetch(@event.OrderId);
+
+        order.UpdateStatus(@event.NewOrderStatus);
+        _orderRepository.Save(order);
+    }
+}
+```
+
+Other times, a saga needs to keep its own state. For example, when the saga needs to track received events; to react to certain failure conditions; issue retries, etc. In these cases, the saga can be implemented as an event sourced aggregate, keep a record of all received events, and publish events of its own that contain the commands that it wants to execute. Then, a separate message relay component should be listening to the saga's events and run the commands contained within.
+
+```csharp
+public class OrderProcessingSaga
+{
+    // Like any other event sourced aggregate, this saga stores its list of
+    // events.
+    private readonly IList<DomainEvent> _events = [];
+
+    // ...
+
+    // These event handlers all also follow a similar pattern. Instead of
+    // directly calling the commands though, the register an event with the
+    // necessary information for the message relay to call the commands.
+    public void Process(OrderCaptured @event)
+    {
+        // ...
+
+        _events.Append(@event);
+        _events.Append(new CommandIssuedEvent(
+            target: Target.PaymentService,
+            command: new ProcessPaymentCommand(@event.OrderId)
+        ));
+    }
+
+    public void Process(PaymentAccepted @event)
+    {
+        // ...
+
+        _events.Append(@event);
+        _events.Append(new CommandIssuedEvent(
+            target: Target.InventoryService,
+            command: new PreparePackageCommand(@event.OrderId)
+        ));
+    }
+
+    public void Process(InventoryCleared @event)
+    {
+        // ...
+
+        _events.Append(@event);
+        _events.Append(new CommandIssuedEvent(
+            target: Target.ShippingService,
+            command: new ScheduleDeliveryCommand(@event.OrderId)
+        ));
+    }
+
+    public void Process(ShipmentDispatched @event)
+    {
+        // ...
+
+        _events.Append(@event);
+    }
+}
+```
+
+![The saga pattern](designing-software-architecture-ddd-part-3/saga.png)
+*Sagas represent a long running business process. One that spans many transactions. They receive events and invoke commands as a result.*
+
+Always remember though, sagas make it possible to implement business processes that span multiple aggregates, but the data across aggregates is only eventually consistent. The core aggregate design rules still apply: only the data within an aggregate is strongly consistent.
+
+### Process manager
+
+The **process manager** pattern is like a more complex saga. While sagas mostly deal with linear flows, and direct mapping between events and commands; a process manager implements more complex business logic that keeps track of the sequence of events, has its own state, and determines how to react. It does not have a simple mapping of events to commands. Instead it has complex logic that decides how to respond to incoming events. It is a central processing unit, listening to events from and issuing commands to multiple sources, and managing an overall business process.
+
+Another difference between them is that sagas are instantiated implicitly, while process managers are instantiated explicitly. Meaning that sagas live and die within the context of the events that they listen to. They "get activated" when an event that they are interested in is published. Process managers on the other hand get activated when the business process they manage gets initiated. They stay alive through the duration of the process's many steps.
+
+Implementation wise, they are essentially aggregates with a strong focus on responding to events. They have their own persistent state, explicit identity, lifecycle, and related objects; as well as a series of event handlers, just like a saga would have.
+
+![Process manager](designing-software-architecture-ddd-part-3/process-manager.png)
+*A process manager orchestrates a long running business process with complex logic that involves many components. The application layer instantiates them explicitly, as it would any other aggregate.*
+
+```csharp
+public class OrderProcessManager
+{
+    private readonly IList<DomainEvent> _events = [];
+
+    // Process managers have their own explicit identity. They are very similar
+    // to aggregates or entities.
+    private OrderId _id;
+
+    // They can include other properties to track state as needed.
+
+    // ...
+
+    // Process managers usually include an initialization procedure that kicks
+    // off the process, and provides the necessary parameters.
+    public void Initialize(/* ... */)
+    {
+        // ...
+
+        _events.Append(orderProcessingInitiated);
+        _events.Append(new CommandIssuedEvent(
+            target: Target.PaymentService,
+            command: new ProcessPaymentCommand(@event.OrderId)
+        ));
+    }
+
+    // The event handlers are very similar to those of the event sourced
+    // stateful saga. The difference is that here they run more complex logic to
+    // determine how to continue the process. As opposed to the saga's simpler
+    // mapping of incoming events to commands.
+    public void Process(PaymentAccepted @event)
+    {
+        // ...
+
+        _events.Append(@event);
+        _events.Append(new CommandIssuedEvent(
+            target: Target.InventoryService,
+            command: new PreparePackageCommand(@event.OrderId)
+        ));
+    }
+
+    public void Process(InventoryCleared @event)
+    {
+        // ...
+
+        _events.Append(@event);
+        _events.Append(new CommandIssuedEvent(
+            target: Target.ShippingService,
+            command: new ScheduleDeliveryCommand(@event.OrderId)
+        ));
+    }
+
+    public void Process(ShipmentDispatched @event)
+    {
+        // ...
+
+        _events.Append(@event);
+    }
+}
+```
