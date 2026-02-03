@@ -330,7 +330,7 @@ orderCreator.Run(payload);
 So, the ports and adapters architectural pattern has a **business logic layer** which has no dependencies on any other components outside of itself. It defines a set of interfaces for all external components that want to interact with it. It also has an **infrastructure layer** which implements concrete classes for the domain layer's interfaces. Data access, interaction with external services, and user interface and presentation logic all live here. And finally, it has a **service/application layer** which, similar to its counterpart from the layered architecture, can emerge between the business logic and infrastructure layers when needed to expose a set of procedures that closely map to user interface actions. It exposes all the business operations that the system supports and orchestrates the business logic to carry them out.
 
 ![The ports and adapters architectural pattern](designing-software-architecture-ddd-part-3/ports-and-adapters.png)
-*When organizing the code following the the ports and adapter architectural pattern, the business logic layer defines interfaces/ports, which the infrastructure layer implements concrete objects for. These objects take care of interacting with the external world.*
+*When organizing the code following the the ports and adapters architectural pattern, the business logic layer defines interfaces/ports, which the infrastructure layer implements concrete objects for. These objects take care of interacting with the external world.*
 
 Clean architecture, onion architecture and hexagonal architecture are all different names for the same core concepts and principles espoused by ports and adapters; sometimes with slight variations depending on the particular flavor and tech stack.
 
@@ -363,13 +363,13 @@ Synchronously, projection engines generate read models using a **catch-up subscr
 
 This checkpoint can be implemented in various ways. The main idea is to offer a mechanism for the projection engine to be able to tell which records are new or have changed since the last run. One way to do it is using something akin to SQL Server's [**rowversion**](https://learn.microsoft.com/en-us/sql/t-sql/data-types/rowversion-transact-sql?view=sql-server-ver17) feature. This is a database-wide, auto-incrementing numeric value that increases after every INSERT and UPDATE operation. The newly incremented value is assigned to the rows that were added or updated. With this, the projection engine can easily query all records whose rowversion is greater than the last checkpoint. Similar functionality can be implemented using database triggers too. Or database tables can also include **timestamp** fields that indicate when records were last touched.
 
-Asynchronous projection engines on the other hand, rely on the command execution model publishing all changes to a **message bus**. The projection engine can subscribe to these messages and updates its read model as they come. This method, while scalable, comes with drawbacks inherent to distributed computing like handling duplicates and out of order messages. It's also more difficult to destroy and regenerate read models that rely on asynchronous messaging only, since the messages are gone after they are processed. Often the better solution is to use a synchronous design and then, only if needed, augment it with the asynchrony.
+Asynchronous projection engines on the other hand, rely on the command execution model publishing all changes to a **message bus**. The projection engine can subscribe to these messages and update its read model as they come. This method, while scalable, comes with drawbacks inherent to distributed computing like handling duplicates and out of order messages. It's also more difficult to destroy and regenerate read models that rely on asynchronous messaging only, since the messages are gone after they are processed. Often the better solution is to use a synchronous design and then, only if needed, augment it with the asynchrony.
 
 Naturally, CQRS is ideal when the system needs to support data in different databases. Imagine an online store, which has an inventory management component that works directly with the command execution model backend by a relational database. But for displaying the catalog to users, it uses a read model backed by a search index, optimized for full text search. And for event sourced domain models, CQRS is practically mandatory.
 
 ### Scope
 
-The patterns that we've seen in this section are not exclusively meant as system-wide nor even bounded-context-wide organizational principles. Arbitrarily enforcing a single pattern everywhere often leads to accidental complexity. Instead we should follow DDD's core principles and deploy these strategies according to what the business domain necessitates. Indeed, within a bounded context, especially one that deals with many subdomains, these should be logical separation between these subdomains. Each resulting module could use a different architectural pattern. In other words, these patterns divide the code base into horizontal slices; and the subdomains can be used to define the vertical slices. This way, a monolithic bounded context can be modularized. This leaves the code base in a good position for future refactoring and further physical separation into distinct bounded contexts in the future (i.e. into separate applications, services and/or processes).
+The patterns that we've seen in this section are not exclusively meant as system-wide nor even bounded-context-wide organizational principles. Arbitrarily enforcing a single pattern everywhere often leads to accidental complexity. Instead we should follow DDD's core principles and deploy these strategies according to what the business domain necessitates. Indeed, within a bounded context, especially one that deals with many subdomains, there should be logical separation between these subdomains. Each resulting module could use a different architectural pattern. In other words, these patterns divide the code base into horizontal slices; and the subdomains can be used to define the vertical slices. This way, a monolithic bounded context can be modularized. This leaves the code base in a good position for future refactoring and further physical separation into distinct bounded contexts in the future (i.e. into separate applications, services and/or processes).
 
 ![Architectural slices](designing-software-architecture-ddd-part-3/architectural-slices.png)
 *When needed, different architectural patterns can be deployed to different subdomains within the same bounded context.*
@@ -380,7 +380,7 @@ In the last few sections we've discussed how to implement business logic and how
 
 ### Model translation
 
-Back in [Chapter 4. Integrating Bounded Contexts](https://www.endpointdev.com/blog/), we discussed how bounded contexts use different communication strategies depending on the disposition of the teams that own them. When the teams have strong communication, **cooperation** patterns like **partnership** and **shared kernel** can be used for integration. Here, bounded contexts can communicate without friction. The protocols for doing so are defined by the teams in an ad-hoc manner and development moves forward without too many issues.
+Back when we talked about integrating bounded contexts, we discussed how bounded contexts use different communication strategies depending on the disposition of the teams that own them. When the teams have strong communication, **cooperation** patterns like **partnership** and **shared kernel** can be used for integration. Here, bounded contexts can communicate without friction. The protocols for doing so are defined by the teams in an ad-hoc manner and development moves forward without too many issues.
 
 However, when the teams are not closely aligned, and cooperation patterns are impossible, a **customer-supplier** relationship emerges. This can be addressed by implementing an **anticorruption layer** in the downstream consumer, to adapt the upstream supplier's model to the consumer's needs. Another option is for the upstream supplier to implement an **open-host service** and expose an integration-specific **published language**, which isolates consumers from the details of its internal model. Both approaches are meant to protect a bounded context's model from the influence of external models.
 
@@ -394,10 +394,10 @@ If the proxy is implemented by the consumer or downstream component, functioning
 
 If the proxy is implemented by the supplier or upstream component, it functions as an open-host service. It takes the incoming requests that come using the published language and translates them to the supplier's internal one. Then, outgoing responses get translated to the published language.
 
-These proxies can be synchronous or asynchronous.
-
 ![Synchronous proxy](designing-software-architecture-ddd-part-3/synchronous-proxy.png)
 *In essence, a proxy is nothing more than a component that sits between two other components and translates the messages passing between them.*
+
+These proxies can be synchronous or asynchronous.
 
 **Synchronous** translation is straightforward. Messages are translated just as they are being received or sent, depending on whether the translation happens upstream or downstream. Normally, the translation logic is implemented directly in the bounded context that needs it.
 
@@ -424,7 +424,7 @@ The proxy can also apply filtering to the messages, deciding which ones to forwa
 An API gateway on its own is not appropriate for this type of model translation, as it doesn't provide persistent storage or more complex processing logic beyond mapping and rerouting. Instead, it can be implemented from scratch as a bespoke solution, or leveraging off the shelf stream processing platforms like [Apache Kafka](https://kafka.apache.org/) or [AWS Kinesis](https://aws.amazon.com/kinesis/).
 
 ![Stateful model translation](designing-software-architecture-ddd-part-3/stateful-proxy.png)
-*A proxy can aggregate and/or combine multiple separate messages into a single one for performance and unification purposes.*
+*A proxy can aggregate and/or combine multiple separate messages into a single one for performance and consolidation purposes.*
 
 The **unification of multiple data sources** is also a common case for stateful model translation. This is necessary for example when a component needs to process data from many different upstream suppliers and apply complex business logic to it. This is commonly seen in the [**backend for frontend**](https://samnewman.io/patterns/architectural/bff/) pattern. In this pattern, an API is defined to meet all of a frontend's needs. Allowing it to call a single backend to interact with all the various services it may need.
 
@@ -513,7 +513,7 @@ public class OrderProcessingSaga
     // ...
 
     // These event handlers all also follow a similar pattern. Instead of
-    // directly calling the commands though, the register an event with the
+    // directly calling the commands though, they register an event with the
     // necessary information for the message relay to call the commands.
     public void Process(OrderCaptured @event)
     {
@@ -564,7 +564,7 @@ Always remember though, sagas make it possible to implement business processes t
 
 ### Process manager
 
-The **process manager** pattern is like a more complex saga. While sagas mostly deal with linear flows, and direct mapping between events and commands; a process manager implements more complex business logic that keeps track of the sequence of events, has its own state, and determines how to react. It does not have a simple mapping of events to commands. Instead it has complex logic that decides how to respond to incoming events. It is a central processing unit, listening to events from and issuing commands to multiple sources, and managing an overall business process.
+The **process manager** pattern is like a more complex saga. While sagas mostly deal with linear flows, and direct mapping between events and commands; a process manager implements more complex business logic that keeps track of the sequence of events, has its own state, and determines how to react. It does not only have a simple mapping of events to commands. Instead it has complex logic that decides how to respond to incoming events. It is a central processing unit, listening to events from and issuing commands to multiple sources, and managing an overall business process.
 
 Another difference between them is that sagas are instantiated implicitly, while process managers are instantiated explicitly. Meaning that sagas live and die within the context of the events that they listen to. They "get activated" when an event that they are interested in is published. Process managers on the other hand get activated when the business process they manage gets initiated. They stay alive through the duration of the process's many steps.
 
