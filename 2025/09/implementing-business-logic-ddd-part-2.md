@@ -31,11 +31,11 @@ In this series of blog posts we're going to explore many aspects of DDD. We will
 
 - [Implementing business logic with Domain-Driven Design](#implementing-business-logic-with-domain-driven-design)
   - [Table of contents](#table-of-contents)
-  - [Chapter 5: Implementing simple business logic](#chapter-5-implementing-simple-business-logic)
+  - [Section 5: Implementing simple business logic](#section-5-implementing-simple-business-logic)
     - [Transaction script](#transaction-script)
     - [Active record](#active-record)
     - [When to use them](#when-to-use-them)
-  - [Chapter 6: Tackling complex business logic](#chapter-6-tackling-complex-business-logic)
+  - [Section 6: Tackling complex business logic](#section-6-tackling-complex-business-logic)
     - [Domain model](#domain-model)
     - [Value object](#value-object)
     - [Entities](#entities)
@@ -43,13 +43,13 @@ In this series of blog posts we're going to explore many aspects of DDD. We will
     - [Domain event](#domain-event)
     - [Domain service](#domain-service)
     - [Data access concerns](#data-access-concerns)
-  - [Chapter 7: Modeling the dimension of time](#chapter-7-modeling-the-dimension-of-time)
+  - [Section 7: Modeling the dimension of time](#section-7-modeling-the-dimension-of-time)
     - [Data storage and retrieval](#data-storage-and-retrieval)
     - [Advantages and disadvantages](#advantages-and-disadvantages)
     - [The event sourced domain model](#the-event-sourced-domain-model)
   - [DDD tools for implementing business logic](#ddd-tools-for-implementing-business-logic)
 
-## Chapter 5: Implementing simple business logic
+## Section 5: Implementing simple business logic
 
 Now that we've explored DDD's higher level system design concepts, it's time to zoom in and start looking at how to implement business logic: the most important part of software. We will start by discussing two patterns that are ideal for implementing simple business logic: transaction script and active record.
 
@@ -301,7 +301,7 @@ An anemic domain model may look like a full fledged domain model, with all the o
 
 In some circles, the transaction script and active record patterns are considered anti patterns. But really, they are just tools for the job. When misapplied, they become detrimental, but when used to solve the problems they are good at, they shine. In fact, they can give you a lot of bang for your design buck. But when the domain logic you're implementing is very complex, they can begin to fall short, as their relatively low level of abstraction becomes insufficient and prone to code repetition, and inconsistencies when this repeated code goes out of sync. Which is a big problem when dealing with complex subdomains.
 
-## Chapter 6: Tackling complex business logic
+## Section 6: Tackling complex business logic
 
 When implementing complex business logic, the patterns that we've seen up to this point can only get you so far. They start to leave a lot to be desired due to their relatively low level of abstraction. When the situation calls for a higher level of abstraction, in order to produce a more supple design, DDD calls for the domain model pattern.
 
@@ -616,7 +616,7 @@ We've already seen [active record](https://www.martinfowler.com/eaaCatalog/activ
 
 But the main takeaway is this: the domain model does not concern itself with data access, or frameworks, or infrastructure. So make sure to keep it plain and use abstractions to keep it unconcerned.
 
-## Chapter 7: Modeling the dimension of time
+## Section 7: Modeling the dimension of time
 
 The **event sourced domain model** is a further evolution of the domain model which incorporates the dimension of **time**. By leveraging domain events as the source of truth for system data, it allows for a model that can provide deeper insight into the data, rich audit logging, and visibility into the state of the aggregates and entities at any previous point in their lifecycle.
 

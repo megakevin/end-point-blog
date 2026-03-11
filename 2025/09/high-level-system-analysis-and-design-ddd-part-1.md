@@ -31,25 +31,25 @@ In this series of blog posts we're going to explore many aspects of DDD. We will
 
 - [High level system analysis and design with Domain-Driven Design](#high-level-system-analysis-and-design-with-domain-driven-design)
   - [Table of contents](#table-of-contents)
-  - [Chapter 1. Analyzing business domains](#chapter-1-analyzing-business-domains)
+  - [Section 1. Analyzing business domains](#section-1-analyzing-business-domains)
     - [Domains and subdomains](#domains-and-subdomains)
     - [Types of subdomains](#types-of-subdomains)
     - [Using subdomains to make strategic decisions](#using-subdomains-to-make-strategic-decisions)
-  - [Chapter 2. Discovering domain knowledge](#chapter-2-discovering-domain-knowledge)
+  - [Section 2. Discovering domain knowledge](#section-2-discovering-domain-knowledge)
     - [The ubiquitous language](#the-ubiquitous-language)
     - [The ubiquitous language as a model of the domain](#the-ubiquitous-language-as-a-model-of-the-domain)
     - [Tools for capturing the ubiquitous language](#tools-for-capturing-the-ubiquitous-language)
-  - [Chapter 3. Managing domain complexity](#chapter-3-managing-domain-complexity)
+  - [Section 3. Managing domain complexity](#section-3-managing-domain-complexity)
     - [Reasons for creating bounded contexts](#reasons-for-creating-bounded-contexts)
     - [Bounded contexts vs subdomains](#bounded-contexts-vs-subdomains)
-  - [Chapter 4. Integrating bounded contexts](#chapter-4-integrating-bounded-contexts)
+  - [Section 4. Integrating bounded contexts](#section-4-integrating-bounded-contexts)
     - [Cooperation patterns](#cooperation-patterns)
     - [Customer-supplier patterns](#customer-supplier-patterns)
     - [Separate ways](#separate-ways)
     - [The context map](#the-context-map)
   - [The DDD high level design concept map](#the-ddd-high-level-design-concept-map)
 
-## Chapter 1. Analyzing business domains
+## Section 1. Analyzing business domains
 
 It is a well understood notion that before writing code, we need to understand the problem we're trying to solve. DDD is consistent with this notion and argues that developers need to, first and foremost, gain an understanding of the business that the software is being built for. To this end, DDD relies on three concepts: domains, subdomains and domain experts.
 
@@ -116,7 +116,7 @@ Here's a table to summarizes the differences between the types of subdomains:
 | Investment            | High               | Medium                  | Low                |
 | Problems              | Interesting        | Solved                  | Simple             |
 
-## Chapter 2. Discovering domain knowledge
+## Section 2. Discovering domain knowledge
 
 After identifying the business domain and categorizing the various subdomains that compose it, we have a bird's-eye view of the business. This is good enough to get started and make high level architectural decisions of potential software solutions to problems within these domains. To actually build the software though, we need much more than that. In order to gain a thorough understanding of the business logic, and be able to eventually model and implement it in code, DDD proposes the **ubiquitous language** as a tool.
 
@@ -165,7 +165,7 @@ An automated acceptance tests suite, written using [Behavior Driven Development]
 
 By nature of being executable and tied closely to the implementation code, there is less chance that they become out of date. This can happen more easily with static documentation written in a wiki. The disadvantage is that they require much more effort. But for the right kind of project, one where business logic is very complex or the scope is very wide, they can be very well worth the cost.
 
-## Chapter 3. Managing domain complexity
+## Section 3. Managing domain complexity
 
 We can attempt to model an entire business domain with one big ubiquitous language, but sometimes that's impossible. Especially so for businesses of a certain size, you will inevitably find inconsistencies and conflicts between the mental models of different domain experts. The simplest example of this scenario is when different experts from different areas of the organization have the same word to describe different concepts. Or when they look at the same business entity with different levels of detail.
 
@@ -196,7 +196,7 @@ Depending on the situation, it is certainly possible to end up with a set of bou
 
 Each bounded context becomes a separate major architectural component. That is, a (micro) service, a project, an application. When we have a component that spans multiple subdomains, programming language organizational structures like namespaces or modules can be used to logically separate the subdomains within.
 
-## Chapter 4. Integrating bounded contexts
+## Section 4. Integrating bounded contexts
 
 For a system to function, its components need to interact with each other. So, once we have decomposed the problem domain into separate bounded contexts, we need to decide their relationship and integration strategies. This need for interaction between them implies that there are touch points between bounded contexts. We call them **contracts**.
 

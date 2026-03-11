@@ -31,12 +31,12 @@ In this series of blog posts we're going to explore many aspects of DDD. We will
 
 - [Designing software architecture with Domain-Driven Design](#designing-software-architecture-with-domain-driven-design)
   - [Table of contents](#table-of-contents)
-  - [Chapter 8: Architectural patterns](#chapter-8-architectural-patterns)
+  - [Section 8: Architectural patterns](#section-8-architectural-patterns)
     - [Layered architecture](#layered-architecture)
     - [Ports and adapters](#ports-and-adapters)
     - [Command query responsibility segregation](#command-query-responsibility-segregation)
     - [Scope](#scope)
-  - [Chapter 9: Communication patterns](#chapter-9-communication-patterns)
+  - [Section 9: Communication patterns](#section-9-communication-patterns)
     - [Model translation](#model-translation)
     - [Stateless model translation](#stateless-model-translation)
     - [Stateful model translation](#stateful-model-translation)
@@ -47,7 +47,7 @@ In this series of blog posts we're going to explore many aspects of DDD. We will
   - [Architectural patterns to use within bounded contexts](#architectural-patterns-to-use-within-bounded-contexts)
   - [Patterns for communicating across bounded contexts](#patterns-for-communicating-across-bounded-contexts)
 
-## Chapter 8: Architectural patterns
+## Section 8: Architectural patterns
 
 Now that we've seen various patterns for implementing business logic, i.e. "the heart of software". We turn our attention to architecture.
 
@@ -376,7 +376,7 @@ The patterns that we've seen in this section are not exclusively meant as system
 ![Architectural slices](designing-software-architecture-ddd-part-3/architectural-slices.png)
 *When needed, different architectural patterns can be deployed to different subdomains within the same bounded context.*
 
-## Chapter 9: Communication patterns
+## Section 9: Communication patterns
 
 In the last few sections we've discussed how to implement business logic and how to leverage architectural patterns to organize the code within a bounded context. In this section, we will take a higher level view and go beyond the scope of a single bounded context. We will learn about patterns of communication across bounded contexts. In other words, how to integrate them.
 
