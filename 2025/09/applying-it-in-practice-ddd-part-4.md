@@ -1,6 +1,6 @@
 ---
 author: "Kevin Campusano"
-title: "Designing software architecture with Domain-Driven Design"
+title: "Applying Domain-Driven Design in Practice"
 date: 2025-12-15
 tags:
 - domain-driven-design
@@ -73,4 +73,107 @@ A domain model leans heavily on components that are testable as units. Plain old
 
 ## Section 11: Evolving design decisions
 
+Of course, software very rarely stays static. On the contrary, it evolves. So far we've been mainly discussing how to create software that's well designed using DDD's concepts. However, if change is not managed correctly, not even the best designed software can resist becoming an unmaintainable mess that is prohibitively expensive to evolve. In this section we will discuss the main forces that produce change, and how to cope with it.
+
+### Changes in the domain
+
+As we've seen before, it is crucial to know the business domain in which the software that we build operates. In particular its important to decompose the domain in many subdomains and identify them by their type: core, supporting and generic, as that knowledge drives important design decissions. As an organization evolves and grows though, there's a good chance that the subdomains that compose it change from one type to another. Our designs need to react accordingly to these changes.
+
+Core and supporting subdomains can become commoditized and become generic. For example, when off-the-shelf solutions become available that cover their functionality. Through emerging business opportunities, generic and supporting subdomains can become core subdomains. This is the case when the company discovers a competitive advantage in an aspect of its buinsess that it thouhth was nothing special. Likewise, a core subdomain can become a supporting one when it stops representing a business advantage but still remains very unique to the business, prompting a divestment and simplification of its logic. Finally, generic subdomains being served by off-the-shelf solutions may be costly to acquire or integrate. In such cases, a company might decide to go with an in-house solution, turning it into a supporting subdomain.
+
+![Subdomain type changes](applying-it-in-practice-ddd-part-4/subdomain-type-changes.png)
+*Subdomain types are not static. These often change during the lifetime of a business.*
+
+Changes to subdomains directly affect the bounded contexts (i.e. the system's high level physical components, applications, services, etc) that work with them, and their related high level design decissions. Namely, their integration pattern and their ownership.
+
+If a subdomain is becoming a core subdomain, we need to consider how its bounded contexts are integrated with others. A core subdomain calls for an anticorruption layer in order to protect its model and for an open-host service with a published language in order to protect the models of its consumers. So, these patterns need to be implemented for the bounded contexts in the newly born core subdomain. Also, separate ways is a big no-no for core subdomains. We don't want important and complex business logic to be duplicated and risk inconsistencies. So we have to make sure to move away from that, and implement one of the consumer-supplier patters discussed earlier.
+
+The ownership strategy is also determined by the type of subdomain. When a subdomain morphs into a core subdomain, development needs to be moved in-house, or to trusted development partners. This is where domain experts are closest and the highest skill level is available. Supporting subdomain implementation and generic subdomain integration on the other hand, are fine to be outsourced.
+
+Of course, a change in subomain should also affect the way in which the business logic is modeled. If the change is in the direction of more complexity, for example when a supporting subdomain becomes a core subdomain, that will manifest in the code base as an increase in dificulty when implementing new features, duplication and bugs; as the original design can no longer support the complexity that the business demands.
+
+In these cases, we need to refactor the business logic and use the pattern that best supports the new subdomain complexity needs. Here are a few pointers on how to transition from simpler business logic implementation patterns to more complex ones:
+
+1. **Transaction script to active record**. These are very similar in that they both model the business as procedural scripts. The advantage of active record is that it provides an abstraction over complex data structures. So, when refactoring transaction scripts into active records, look for direct data access, manipulation with SQL and move that logic into the active record objects. Start with the most complex structures.
+
+2. **Active record to domain model**. When the logic that orchestrates the active records becomes overly complex, duplicated and/or inconsistent, refactor into a domain model. Identify data structures that could be made immutable and encapsulate them and their related logic as value objects. Look for all logic that modifies system state and encapsulate it as methods inside the active records, then make all setters private. This makes sure all modifications of state happen inside the objects that are getting modified. These are your first rudimentary entities and commands. Next, examine the object hierarchies that are emerging, as these are your aggregates. Use the guiding rules of keeping them small, their trasnactional boundaries tight, and ensuring they contain only the data they need to be strnongly consistent. Finally, identify a root for each aggregate. This will be the entry point for their public interface.
+
+3. **Domain model to event sourced domain model**. In order to transition into an event sourced domain model, the key is to stop modifying the aggregates data directly and instead, produce domain events that reflect the changes. Make sure to capture those events reliably, and implement the projections necessary to take collections of events and turn them into fully hydrated aggregates. One tricky part of the migration is how to deal with the existing state-based data. There are two ways of doing this: One way is to model a "migration" event, which represents each aggregate in full, as they were before event sourcing was implemented. Another way is to try and reverse engineer a series of past events out of each aggregate in an attempt to approximate their history as if event sourcing was always present.
+
+### Organizational changes
+
+Organizational changes should also trigger changes in the system's design. Namely, the strategies that bounded contexts use to communicate with each other. These can change as a result changes in the communication and collaboration levels of involved teams.
+
+For example, when the development division grows to the point that new teams are created, a single bounded context that was maintained by the original smaller team needs to be separated into finer granularity ones. This way we maintain single team ownership for bounded contexts.
+
+Additionally, when teams that own bounded contexts that are tightly integrated grow distant, the integration patterns used need to evolve to reflect the new reality of the organization. A partnership style integration should evolve into a customer-supplier or even separate ways one.
+
+### Domain knowledge changes
+
+At its core, DDD is about having business domain knowledge drive software design decissions. As a greater understanding of the problem domain develops, so too should the design evolve to incorporte the new knowledge.
+
+The beginning of a project if often the time where we have the weakest understanding of the domain. We can use this realization to drive the decissions related to how we will decompose a system into bounded contexts. At the early stages, it's better to err on the side of fewer separations, and bigger bounded contexts with wider boundaries. This is because a premature separation that ends up being wrong is very costly to live with and very costly to fix later. The contrary is much less expensive and less riskier: decomposing a monolithic system later when domain knowledge has solidified and we're better equipped to make those decissions.
+
+Unfortunately, it is also possible for domain knowledge to get lost over time. Documentation can become stale and business experts and developers may leave the organization and leave a vacuum of knowledge. It is important to be proactive in maintaining the domain knowledge via training, maintenance of documents, and ongoing discussions. The [EventStorming workshop](https://en.wikipedia.org/wiki/Event_storming) is a good tool for recovering lost knowledge.
+
+### Growth
+
+In software projects, growth is always desirable. After all, growth means that the software is useful, that the project is successful, and that stakeholders and users want to continue investing on it and evolving it with new capabilities. Uregulated growth however, can turn a code base into a big ball of mud. This happens when changes and additions are done haphazarldy without evaluating the original design decissions.
+
+To make sure a code base gorws in a healthy manner, the key principle is this: identifying and eliminating accidental complexity. That is, all complexity that is not essential to the problem domain. Complexity that arises in accident, due to bad design decissions. Here are a few aspects to keep in check to prevent build up of accidental complexity:
+
+- **Subomains**: As the business grows, the subdomains also morph, their types change and their boundaries shift. It's important to keep track of how the subdomains are evolving because that gives us the ability to choose the appropriate technical solutions for them.
+- **Bounded contexts**: Growth can also cause the boundaries of bounded contexts to become hazy. Models from other contexts can leak and bounded contexts can become bloated with logic that belongs elsewhere or overly dependent on others. We need to be vigilant of this and make sure to keep bounded contexts focused and their boundaries solid. Make sure they stay internally cohesive, and split logic into new bounded contexts when needed.
+- **Aggregates**: Similar to Bounded contexts, unregulated growth can cause aggregates to accumulate extraneous logic, expanding them unnecessarily. As we know, the golden rule for aggregates is for them to be only as big as they need to be to include only the data that needs to be strongly consistent for them to be able to fulfill the business requirements. We need to make sure aggregates only contain the logic that's closely related to their purpose in the domain. When necessary, new aggregates can be crated for new logic.
+
 ## Section 12: Domain-driven design in the real world
+
+Some common misconceptions about DDD is that it can only be applied in greenfield projects where the entire team are DDD experts and that all the tools and practices need to be included wholesale for the practice to be effective. This couldn't be farther from the truth. In fact, brownfield projects that have already proven their business value but have accumulated tech debt are the ones that stand to benefit the most from applying DDD. In these situations, the patterns we've discussed can be gradually introduced, within the context of a greater effort to modernize the code base.
+
+### Strategic analysis
+
+Unsurprisingly, when introducing DDD into an organization, the first step should be to understand its business domain. To this end, key questions ought to be asked:
+
+1. What is the organization's business domain?
+2. Who are its customers?
+3. What service or product does it provide to its customers?
+4. Who are its competitors?
+
+That'll give us a general understanding of its business goals. Then, a good place to look next is the organizational structure. The divisions, departments, etc. That'll give us insight into the subdomains. Next, we should analyze these subdomains and identify their types.
+
+The core subdomains will be the areas of business differentiation and competitive advantage. Some intellectual property, patent or algorithm that gives them an edge againts their competitors. Unfortunately, you are also likely to find core subdomains in the software that's worst designed. Usually legacy systems that everybody is afraid of refactoring due to their immense business value. For generic subdomains, identify where off the shelf solutions are deployed or open source components are integrated. Finally, supporting subdomains will be whatever is left. Those applications that have been developed in house but are not particularly interesting. Mostly CRUDs and ETLs. They may also be badly designed, but the pain they cause is much less severe because they don't change too much nor do they offer great business value.
+
+Next, dig deeper and explore the current design. Identify the high level physycal software components: applications, services, backend jobs. These likely won't be clearly defined bounded contexts in the DDD sense, but will give you a starting point in moving in that direction for system decomposition. The key here is to identify the components that have decoupled lifecycles. The ones that can be evolved, built and deployed independently. Next, identify the patterns that have been used to implement their interactions with one another, their internal architecture and business logic. Make sure they are appropriate for the level of complexity of the business problem they are addressing.
+
+Finally, identify where domain knowledge has been lost and endeavor to recover it. As mentioned earlier, the EventStorming workshop is a great exercise to go through for this.
+
+### Modernization strategy
+
+When it comes to to modernize a code base by moving it in the direction of DDD, its better to start small and do it gradually. "Big rewrite" projects are rarely successful, and should be avoided. Here are some suggestions to keep in mind:
+
+When working on a big monolithic system, it's often useful to start by making their logical boundaries explicit along the lines of the subdomains that it contains. Separation into bounded contexts would be the ideal, but it is often too big a task to undertake in one fell swoop. For example, instead of having namespaces and modules reference technical patterns, it is often useful to have them reflect the subdomains. That is, instead of namespaces like "Store.WebUI", "Store.Infrastructure" or "Store.Services"; that can be reorganized into the likes of "Store.Inventory", "Store.OrderProcessing", "Store.ShoppingCart". That can become the basis for further physical separation down the line. Also remember to apply similar separation to other places where code lives, like stored procedures in the database or serveless functions in a cloud provider.
+
+When it comes to physical separation of modules, starting small is also advisable. Instead of decomposing a big monoloth into many microservices right away, identify one or two modules that would provide the highest business value and extract those. The logical boundaries discussed in the previous paragraph are a good guide, as these can be promoted into physical boundaries.
+
+For business logic and internal component architecture, look for the pain. The areas of a code base where matters of core subdomains are handled, and which have been implemented using inappropriate patters for their level of complexity, are usually the ones to attack first, as they will provide the most benefit for being in better shape. These are the areas that produce more pain for developers, where changes are overly expensive. Beware of big jumps though. Refactoring transaction scripts directly into an event sourced domain model is a risky proposition. Takling on the entire codebase all at once is also dangerous. It's better to do it gradually, picking specific use cases or business operations and evolving them one by one, step by step. Continue of avoid a big rewrite, and instead operate in small incremental steps.
+
+This migration can be done in place, but also, the [strangler fig pattern](https://martinfowler.com/bliki/StranglerFigApplication.html) can be a good choice for these. With this pattern, the main idea is to create a new component to replace an old legacy one. The new strangler component grows gradually as more and more features are migrated from the old one, until it becomes obsolete and gets fully replaced. In the period of time in which both old and new components are "alive", a facade is put in between them and the rest of the system. This facade takes care of gradually re-routing messages to the new component as they come online. Ultimately, the facade gets removed when the new component is ready to handle all the requests that the legacy one used to support.
+
+![The strangler fig pattern](applying-it-in-practice-ddd-part-4/strangler-fig.png)
+*With ghe strangler fig pattern, we develop a new component that gradually replaces a legacy one. During the transition, both components work with the same databse, and the rest of the system interacts with them through a facade.*
+
+### Selling Domain-driven design
+
+Finally, don't fall into the trap of thinking that you need to sell your entire organization on DDD in order to start using it. DDD is first and foremost an engineering practice, and as engineers it is up to us to use it. It doesn't need to be an organizational strategy, you can still reap the benefits for DDD by incorporating it into your professional toolbox.
+
+For example, you can make the decission to develop and use the ubiquitous language. Listen to domain experts and other stake holders to learn the terms and concepts and make sure the code talks the same language. Also, use that language yourself in all project communications. Try to identify and resolve inconsistencies. Do this with the help of domain experts, who are often happy to talk to developers, even in informal settings.
+
+For big system, explore the options for decomposition using bounded contexts as guiding principles, even if not calling them out by name explicitly. Think of the principles behing the pattern: "All-in-one" solutions are often innefective and incur in high cognitive load and complexity. So, alleviate this by separating them into decoupled physical components, each with its own model of the domain, geared towards solving specific problems. Remember that high ownership is a desirable trait. To that end, ensure that a given code base is owned by a single team. This way we can avoid friction when the teams cannot collaborate effectively.
+
+Similarly, when implementing business logic using the domain model patterns we've seen, think about the principles behind them. About their purpose and advantages when compared to the alternatives. To protect data consistency, you can make transactional boundaries explicit by leveraging aggregates. Aggregates are great places to encapsulate related business logic. This prevents logic from being duplicated, becoming out of sync, and far away from the data structures that it manages. For the same reasons, prefer application logic implemented in aggregates instead of stored procedures. Make sure the aggregates and the transactional boundaries they represent stay small. This keeps aggregate complexity from going out of hand and also helps with performance. Also, when long term data consistency is a concern, traditional log files fall short. In these cases event sourcing is more reliable.
+
+## Finally
+
+And with that we've reached the end of this series of blog posts discussing domain-driven design. Like I mentioned at the beginning, this series is greatly inspired by [Vlad Khononov](https://vladikk.com/)'s book: "[Learning Domain-Driven Design: Aligning Software Architecture and Business Strategy](https://www.oreilly.com/library/view/learning-domain-driven-design/9781098100124/)". This book does a great job in democratizing DDD, as Evans' original work can be somewhat dense at times. And while I went through a lot of the topics that he covers in his book, there are many more that I didn't, like EventStorming, microservices, event driven architectures, data meshes, and their relationship with DDD. So I can't recommend strongly enough that you pick it up yourself. Hopefully this series has served as a solid introduction and encouraged readers to dig deeper into the topic.
+
+At the end of the day, remember to be pragmatic with DDD. It is not an all-or-nothing proposition. Feel free to pick the tools, patterns and practices that will give you the greatest bang for the buck in your particular situation. Even if they are different from the ones we've discussed so far. The most important thing is to come up with effective models, cultivate a ubiquitous language, and work closely with domain experts. Also keep in mind that DDD is not necessarily about value objects, entities and aggregates. DDD is about putting the business domain front and center, analyzing it and letting it drive the design, and coming up with effective models of the domain that can solve specific problems.
