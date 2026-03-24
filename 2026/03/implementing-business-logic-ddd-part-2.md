@@ -1,7 +1,7 @@
 ---
 author: "Kevin Campusano"
 title: "Implementing business logic with Domain-Driven Design"
-date: 2025-12-15
+date: 2026-03-24
 tags:
 - domain-driven-design
 - software-engineering

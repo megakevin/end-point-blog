@@ -1,7 +1,7 @@
 ---
 author: "Kevin Campusano"
 title: "Applying Domain-Driven Design in Practice"
-date: 2025-12-15
+date: 2026-03-24
 tags:
 - domain-driven-design
 - software-engineering

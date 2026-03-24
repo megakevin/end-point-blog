@@ -1,7 +1,7 @@
 ---
 author: "Kevin Campusano"
 title: "High level system analysis and design with Domain-Driven Design"
-date: 2025-08-25
+date: 2026-03-24
 tags:
 - domain-driven-design
 - software-engineering
