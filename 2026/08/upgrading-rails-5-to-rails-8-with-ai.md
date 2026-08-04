@@ -1,11 +1,12 @@
 ---
 author: Edgar Mlowe
 title: "Upgrading Rails 5 to Rails 8 with AI: What Broke After the Specs Went Green"
-description: "A first-hand AI-assisted Rails 5.0 to Rails 8.1 fresh-app transplant: what broke after the specs went green, why the tests missed it, and how we verified the application's highest-risk workflows."
+description: "How we jumped three major Rails versions with AI, and what a green test suite failed to catch."
 featured:
   endpoint: true
-  image_url: /blog/2026/06/upgrading-rails-5-to-rails-8-with-ai/cover.webp
-date: 2026-06-23
+  image_url: /blog/2026/08/upgrading-rails-5-to-rails-8-with-ai/cover.webp
+date: 2026-08-04
+github_issue_number: 2195
 tags:
 - artificial-intelligence
 - ruby
@@ -14,7 +15,7 @@ tags:
 - troubleshooting
 ---
 
-![An editorial illustration of an engineer crossing from a tangled legacy software landscape toward a cleaner modern system, with AI present as a small guide rather than the driver.](/blog/2026/06/upgrading-rails-5-to-rails-8-with-ai/cover.webp)
+![An editorial illustration of an engineer crossing from a tangled legacy software landscape toward a cleaner modern system, with AI present as a small guide rather than the driver.](/blog/2026/08/upgrading-rails-5-to-rails-8-with-ai/cover.webp)
 
 <!-- Illustration created with AI direction by Edgar Mlowe, 2026. -->
 
