@@ -88,4 +88,4 @@ Forgery::Address.caribbean_country
 
 ![Using our custom forgery](creating-custom-dictionaries-for-the-forgery-gem/using-custom-forgery.png)
 
-And that's all for now! We recently used this technique in a legacy project to help implement a feature where random, human-friendly WiFi passwords had to be auto-generated for newly onboarded users. Pretty neat!
+And that's all for now! We recently used this technique in a legacy project to help implement a feature where random, human-friendly Wi-Fi passwords had to be auto-generated for newly onboarded users. Pretty neat!
